@@ -7,7 +7,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 public class ClientHandler implements Runnable {
-    private Socket clientSocket;
+    private final Socket clientSocket;
 
     public ClientHandler(Socket socket) {
         this.clientSocket = socket;
@@ -20,16 +20,17 @@ public class ClientHandler implements Runnable {
             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
 
             String clientMessage;
+
             while ((clientMessage = in.readLine()) != null) {
                 System.out.println("Client message: " + clientMessage);
-                out.println("Message Received: " + clientMessage);
+                out.println("Server Response: " + clientMessage);
             }
 
             in.close();
             out.close();
             clientSocket.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
     }
 }
