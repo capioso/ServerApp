@@ -37,3 +37,4 @@ build/
 ### Keys ###
 googleCloud
 googleCloud.pub
+*.jar
