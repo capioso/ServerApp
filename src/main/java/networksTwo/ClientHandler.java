@@ -21,10 +21,9 @@ public class ClientHandler implements Runnable {
 
             String clientMessage;
             while ((clientMessage = in.readLine()) != null) {
-                System.out.println("Client message" + clientMessage);
+                System.out.println("Client message: " + clientMessage);
                 out.println("Message Received: " + clientMessage);
             }
-
 
             in.close();
             out.close();
