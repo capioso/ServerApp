@@ -9,6 +9,9 @@ ssh -i googleCloud capioso@34.130.54.17
 # Uploading jar to home from server
 scp -i googleCloud target/Server-1.0.jar capioso@34.130.54.17:~
 
+# Run server
+java -jar Server-2.0.jar 10852 'j@L9DZQ6y=3"'
+
 # List process if port is occupied
 ps aux
 
