@@ -22,12 +22,7 @@ public class ClientHandler implements Runnable {
             String clientMessage;
             while ((clientMessage = in.readLine()) != null) {
                 System.out.println("Client message" + clientMessage);
-
-                if ("PING".equalsIgnoreCase(clientMessage)) {
-                    out.println("ACK");
-                } else {
-                    out.println("Message Received: " + clientMessage);
-                }
+                out.println("Message Received: " + clientMessage);
             }
 
 
