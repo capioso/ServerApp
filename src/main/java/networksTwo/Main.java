@@ -35,7 +35,7 @@ public class Main {
 
             SSLServerSocketFactory sslServerSocketFactory = sslContext.getServerSocketFactory();
             try (SSLServerSocket serverSocket = (SSLServerSocket) sslServerSocketFactory.createServerSocket(port)) {
-                System.out.println("Listening on port " + port);
+                System.out.println("Listening!");
 
                 while (true) {
                     Socket clientSocket = serverSocket.accept();
