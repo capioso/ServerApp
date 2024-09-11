@@ -1,8 +1,10 @@
 package networksTwo;
 
+import networksTwo.service.UserService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 
 import javax.net.ssl.KeyManagerFactory;
@@ -21,7 +23,7 @@ public class Main {
     }
 
     @Bean
-    public CommandLineRunner startServer() {
+    public CommandLineRunner startServer(ApplicationContext context) {
         return args -> {
             if (args.length != 2) {
                 throw new IllegalArgumentException("Wrong number of arguments, required <port> <keystore_password>");
@@ -47,12 +49,12 @@ public class Main {
                 SSLServerSocketFactory sslServerSocketFactory = sslContext.getServerSocketFactory();
                 try (SSLServerSocket serverSocket = (SSLServerSocket) sslServerSocketFactory.createServerSocket(port)) {
                     System.out.println("Listening!");
-
+                    UserService userService = context.getBean(UserService.class);
                     while (true) {
                         var clientSocket = serverSocket.accept();
                         System.out.println("Connected client: " + clientSocket.getInetAddress());
 
-                        var clientHandler = new ClientHandler(clientSocket);
+                        var clientHandler = new ClientHandler(clientSocket, userService);
                         new Thread(clientHandler).start();
                     }
                 }

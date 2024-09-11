@@ -2,6 +2,7 @@ package networksTwo.service;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.PersistenceException;
 import networksTwo.model.User;
 import networksTwo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,11 @@ public class UserService {
     private EntityManager entityManager;
 
     public void createUser(User user) {
-        userRepository.save(user);
+        try {
+            userRepository.save(user);
+        }catch (Exception e) {
+            throw new PersistenceException("Error creating user: " + e.getMessage());
+        }
     }
 
     public boolean checkDatabaseConnection() {
