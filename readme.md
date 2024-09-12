@@ -1,25 +1,17 @@
 # Commands
-mvn clean
-mvn compile
-mvn package
+mvn clean && mvn compile && mvn package
 
 # Connecting to server
 ssh -i googleCloud capioso@34.130.54.17
 
 # Uploading jar to home from server
-scp -i googleCloud target/Server-1.0.jar capioso@34.130.54.17:~
+scp -i googleCloud target/Server-3.0.jar capioso@34.130.54.17:~
 
 # Run server
 java -jar Server-2.0.jar 10852 'j@L9DZQ6y=3"'
 
-# List process if port is occupied
-ps aux
-
-# Stop job
-sudo kill -9 pid
-
-# port
-10852
+# Free port and remove jar
+kill -9 $(ps aux | grep '[j]ava -jar Server-3.0.jar' | awk '{print $2}') && rm -r Server-3.0.jar
 
 # Key store password
 j@L9DZQ6y=3"

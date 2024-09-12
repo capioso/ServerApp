@@ -1,4 +1,4 @@
-package networksTwo.model;
+package networksTwo.domain.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -39,5 +39,22 @@ public class User {
 
     public void setPassword(@Pattern(regexp = "^[a-zA-Z0-9!@#$%^&*]+$", message = "Password must be alphanumeric and may include special characters") String password) {
         this.password = password;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", username='" + username + '\'' +
+                '}';
     }
 }
