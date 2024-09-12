@@ -13,6 +13,9 @@ import networksTwo.domain.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static networksTwo.adapter.in.PasswordUtils.checkPassword;
+import static networksTwo.adapter.in.PasswordUtils.hashPassword;
+
 
 public class ClientHandler implements Runnable {
 
@@ -86,11 +89,12 @@ public class ClientHandler implements Runnable {
         try {
             String username = node.path("username").asText();
             String password = node.path("password").asText();
-            User newUser = new User();
-            newUser.setUsername(username);
-            newUser.setPassword(password);
-            userService.createUser(newUser);
-            return "User created";
+
+            User user = userService.getByUsername(username);
+            if (!checkPassword(password, user.getPassword())){
+                throw new Exception("Bad credentials");
+            }
+            return "Login successful! Welcome " + user.getUsername();
         } catch (Exception e) {
             return e.getMessage();
         }
@@ -104,9 +108,9 @@ public class ClientHandler implements Runnable {
             User newUser = new User();
             newUser.setUsername(username);
             newUser.setEmail(email);
-            newUser.setPassword(password);
+            newUser.setPassword(hashPassword(password));
             userService.createUser(newUser);
-            return "User created";
+            return "User created successfully";
         } catch (Exception e) {
             return e.getMessage();
         }

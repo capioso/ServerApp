@@ -19,6 +19,18 @@ public class UserService {
         }
     }
 
+    public User getByUsername(String username) throws Exception {
+        try {
+            User user = userRepository.findByUsername(username);
+            if (user == null) {
+                throw new Exception("User with username " + username + " not found");
+            }
+            return user;
+        }catch(Exception e) {
+            throw new Exception("User not found by username: " + e.getMessage());
+        }
+    }
+
     public void deleteByUsername(String username) throws Exception {
         try {
             User existent = userRepository.findByUsername(username);
