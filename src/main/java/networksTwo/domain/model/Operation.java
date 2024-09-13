@@ -9,5 +9,5 @@ public enum Operation {
     UPDATE_CHAT,
     DELETE_CHAT,
     SEND_MESSAGE,
-    LOGIN
+    LOGIN_USER
 }

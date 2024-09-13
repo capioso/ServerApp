@@ -8,6 +8,7 @@ import java.net.Socket;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import networksTwo.domain.model.Operation;
 import networksTwo.domain.model.User;
 import networksTwo.domain.service.UserService;
 import org.slf4j.Logger;
@@ -73,14 +74,26 @@ public class ClientHandler implements Runnable {
 
     private String handleOperation(String op, JsonNode rootNode) {
         try {
-            return switch (op) {
-                case "LOGIN_USER" -> handleLogInUser(rootNode);
-                case "CREATE_USER" -> handleCreateUser(rootNode);
+            Operation operation = Operation.valueOf(op);
+            return switch (operation) {
+                case Operation.LOGIN_USER -> handleLogInUser(rootNode);
+                case Operation.CREATE_USER-> handleCreateUser(rootNode);
+                case Operation.GET_USER-> handleGetUser(rootNode);
                 default -> "Unknown operation: " + op;
             };
         } catch (Exception e) {
             logger.error("Error handling operation: " + op, e.getMessage());
             return "Error processing request";
+        }
+    }
+
+    private String handleGetUser(JsonNode node) {
+        try {
+            String username = node.path("username").asText();
+            User user = userService.getByUsername(username);
+            return "User with username " + user.getUsername() + " exists";
+        } catch (Exception e) {
+            return e.getMessage();
         }
     }
 
