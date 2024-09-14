@@ -8,13 +8,10 @@ ssh -i googleCloud capioso@34.130.54.17
 scp -i googleCloud target/Server-3.0.jar capioso@34.130.54.17:~
 
 # Run server
-java -jar Server-2.0.jar 10852 'j@L9DZQ6y=3"'
+java -jar Server-3.0.jar
 
 # Free port and remove jar
 kill -9 $(ps aux | grep '[j]ava -jar Server-3.0.jar' | awk '{print $2}') && rm -r Server-3.0.jar
-
-# Key store password
-j@L9DZQ6y=3"
 
 ```shell
 Generando par de claves RSA de 2.048 bits para certificado autofirmado (SHA384withRSA) con una validez de 365 días

@@ -10,12 +10,14 @@ import javax.net.ssl.SSLServerSocketFactory;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.security.KeyStore;
+import java.util.Map;
 
 @Configuration
 public class TlsConfig {
-    private static final int SERVER_PORT = 10852;
-    private static final String KEYSTORE_PASSWORD = "j@L9DZQ6y=3\"";
-    private static final String KEYSTORE_PATH = "serverkeystore.jks";
+    private static final Map<String, String> env = System.getenv();
+    private static final int SERVER_PORT = Integer.parseInt(env.get("SERVER_PORT"));
+    private static final String KEYSTORE_PASSWORD = env.get("KEYSTORE_PASSWORD");
+    private static final String KEYSTORE_PATH = env.get("KEYSTORE_PATH");
 
     @Bean
     public SSLServerSocket sslServerSocket() throws Exception {
