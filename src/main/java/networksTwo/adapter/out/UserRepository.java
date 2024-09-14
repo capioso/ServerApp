@@ -1,4 +1,4 @@
-package networksTwo.repository;
+package networksTwo.adapter.out;
 
 import networksTwo.domain.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;

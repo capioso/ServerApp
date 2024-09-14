@@ -1,4 +1,4 @@
-package networksTwo.adapter.in;
+package networksTwo.utils;
 
 import org.mindrot.jbcrypt.BCrypt;
 

@@ -1,7 +1,7 @@
 package networksTwo.domain.service;
 
 import networksTwo.domain.model.User;
-import networksTwo.repository.UserRepository;
+import networksTwo.adapter.out.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

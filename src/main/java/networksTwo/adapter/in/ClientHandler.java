@@ -14,8 +14,8 @@ import networksTwo.domain.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static networksTwo.adapter.in.PasswordUtils.checkPassword;
-import static networksTwo.adapter.in.PasswordUtils.hashPassword;
+import static networksTwo.utils.PasswordUtils.checkPassword;
+import static networksTwo.utils.PasswordUtils.hashPassword;
 
 
 public class ClientHandler implements Runnable {
