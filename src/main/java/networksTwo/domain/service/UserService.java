@@ -14,7 +14,7 @@ public class UserService {
     public void createUser(User user) throws Exception {
         try {
             userRepository.save(user);
-        }catch(Exception e) {
+        } catch (Exception e) {
             throw new Exception("User not created: " + e.getMessage());
         }
     }
@@ -26,7 +26,7 @@ public class UserService {
                 throw new Exception("User with username " + username + " not found");
             }
             return user;
-        }catch(Exception e) {
+        } catch (Exception e) {
             throw new Exception("User not found by username: " + e.getMessage());
         }
     }
@@ -36,7 +36,7 @@ public class UserService {
             User existent = userRepository.findByUsername(username);
             if (existent != null) {
                 userRepository.delete(existent);
-            }else {
+            } else {
                 throw new Exception("User with username >" + username + "<, do not exist.");
             }
         } catch (Exception e) {
