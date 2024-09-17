@@ -9,6 +9,7 @@ import static networksTwo.utils.JwtUtils.generateToken;
 import static networksTwo.utils.JwtUtils.validateToken;
 import static networksTwo.utils.PasswordUtils.checkPassword;
 import static networksTwo.utils.PasswordUtils.hashPassword;
+import static networksTwo.utils.SerializerUtils.handleString;
 
 public class UserHandler {
 
@@ -19,7 +20,7 @@ public class UserHandler {
         System.out.println("UUID: " + id);
         String username = node.path("username").asText();
         User user = userService.getByUsername(username);
-        return "User " + user.getUsername() + " found";
+        return handleString("message", "User " + user.getUsername() + " found");
     }
 
     public static String handleLogInUser(UserService userService, JsonNode node) throws Exception {
@@ -30,7 +31,7 @@ public class UserHandler {
             throw new Exception("Bad credentials");
         }
         String token = generateToken(user.getId());
-        return "token:" + token;
+        return handleString("token", token);
     }
 
     public static String handleCreateUser(UserService userService, JsonNode node) throws Exception {
@@ -42,6 +43,6 @@ public class UserHandler {
         newUser.setEmail(email);
         newUser.setPassword(hashPassword(password));
         userService.createUser(newUser);
-        return "User created successfully";
+        return handleString("message", "User created successfully");
     }
 }

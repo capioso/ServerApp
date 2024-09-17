@@ -5,6 +5,8 @@ import networksTwo.adapter.out.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 public class UserService {
 
@@ -16,6 +18,18 @@ public class UserService {
             userRepository.save(user);
         } catch (Exception e) {
             throw new Exception("User not created: " + e.getMessage());
+        }
+    }
+
+    public User getById(UUID id) throws Exception {
+        try {
+            User user = userRepository.findById(id);
+            if (user == null) {
+                throw new Exception("User with id " + id + " not found");
+            }
+            return user;
+        } catch (Exception e) {
+            throw new Exception("User not found by id: " + e.getMessage());
         }
     }
 

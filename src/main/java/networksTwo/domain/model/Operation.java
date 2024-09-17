@@ -6,6 +6,7 @@ public enum Operation {
     UPDATE_USER,
     DELETE_USER,
     CREATE_CHAT,
+    GET_CHAT,
     UPDATE_CHAT,
     DELETE_CHAT,
     SEND_MESSAGE,

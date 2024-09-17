@@ -1,14 +1,10 @@
 package networksTwo.domain.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Column;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 public class User {
@@ -28,6 +24,12 @@ public class User {
     @Column(nullable = false)
     @Pattern(regexp = "^[a-zA-Z0-9!@#$%^&*]+$", message = "Password must be alphanumeric and may include special characters")
     private String password;
+
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Chat> chats = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "users")
+    private List<Chat> participatedChats = new ArrayList<>();
 
     public void setUsername(@Pattern(regexp = "^[a-zA-Z]+$", message = "Username must be alpha") String username) {
         this.username = username;
@@ -56,6 +58,11 @@ public class User {
     public String getPassword() {
         return password;
     }
+
+    public List<Chat> getChats() {
+        return chats;
+    }
+
 
     @Override
     public String toString() {
