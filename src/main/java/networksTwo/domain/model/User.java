@@ -1,6 +1,7 @@
 package networksTwo.domain.model;
 
 import jakarta.persistence.*;
+import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 
@@ -25,11 +26,13 @@ public class User {
     @Pattern(regexp = "^[a-zA-Z0-9!@#$%^&*]+$", message = "Password must be alphanumeric and may include special characters")
     private String password;
 
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToMany(mappedBy = "users", fetch = FetchType.EAGER)
     private List<Chat> chats = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "users")
-    private List<Chat> participatedChats = new ArrayList<>();
+    @Transactional
+    public List<Chat> getChats() {
+        return chats;
+    }
 
     public void setUsername(@Pattern(regexp = "^[a-zA-Z]+$", message = "Username must be alpha") String username) {
         this.username = username;
@@ -57,10 +60,6 @@ public class User {
 
     public String getPassword() {
         return password;
-    }
-
-    public List<Chat> getChats() {
-        return chats;
     }
 
 

@@ -2,8 +2,11 @@ package networksTwo.adapter.in;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.JsonNode;
+import networksTwo.adapter.out.ActiveSessions;
 import networksTwo.domain.model.User;
 import networksTwo.domain.service.UserService;
+
+import java.util.UUID;
 
 import static networksTwo.utils.JwtUtils.generateToken;
 import static networksTwo.utils.JwtUtils.validateToken;
@@ -23,7 +26,7 @@ public class UserHandler {
         return handleString("message", "User " + user.getUsername() + " found");
     }
 
-    public static String handleLogInUser(UserService userService, JsonNode node) throws Exception {
+    public static String handleLogInUser(UserService userService, JsonNode node, UUID sessionId) throws Exception {
         String username = node.path("username").asText();
         String password = node.path("password").asText();
         User user = userService.getByUsername(username);
@@ -31,6 +34,7 @@ public class UserHandler {
             throw new Exception("Bad credentials");
         }
         String token = generateToken(user.getId());
+        ActiveSessions.activeUsers.get(sessionId).setUserId(user.getId());
         return handleString("token", token);
     }
 

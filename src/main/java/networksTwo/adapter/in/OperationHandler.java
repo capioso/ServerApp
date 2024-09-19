@@ -9,6 +9,9 @@ import networksTwo.domain.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.PrintWriter;
+import java.util.UUID;
+
 import static networksTwo.adapter.in.ChatHandler.handleCreateChat;
 import static networksTwo.adapter.in.ChatHandler.handleGetChat;
 import static networksTwo.adapter.in.UserHandler.*;
@@ -25,11 +28,11 @@ public class OperationHandler {
         this.chatService = chatService;
     }
 
-    public String handleOperation(String op, JsonNode rootNode) {
+    public String handleOperation(String op, JsonNode rootNode, UUID sessionId) {
         try {
             Operation operation = Operation.valueOf(op);
             return switch (operation) {
-                case Operation.LOGIN_USER -> handleLogInUser(userService, rootNode);
+                case Operation.LOGIN_USER -> handleLogInUser(userService, rootNode, sessionId);
                 case Operation.CREATE_USER -> handleCreateUser(userService, rootNode);
                 case Operation.GET_USER -> handleGetUser(userService, rootNode);
                 case Operation.CREATE_CHAT -> handleCreateChat(userService, chatService, rootNode);

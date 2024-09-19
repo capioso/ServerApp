@@ -4,6 +4,7 @@ import networksTwo.adapter.out.ChatRepository;
 import networksTwo.domain.model.Chat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ChatService {
@@ -11,6 +12,7 @@ public class ChatService {
     @Autowired
     private ChatRepository chatRepository;
 
+    @Transactional
     public void createChat(Chat chat) throws Exception {
         try {
             chatRepository.save(chat);
@@ -19,6 +21,7 @@ public class ChatService {
         }
     }
 
+    @Transactional
     public void updateChat(Chat chat) throws Exception {
         try {
             chatRepository.save(chat);
@@ -27,6 +30,7 @@ public class ChatService {
         }
     }
 
+    @Transactional
     public Chat getChat(String title) throws Exception {
         try {
             return chatRepository.getByTitle(title);
@@ -34,4 +38,6 @@ public class ChatService {
             throw new Exception("Chat not found: " + e.getMessage());
         }
     }
+
+
 }
