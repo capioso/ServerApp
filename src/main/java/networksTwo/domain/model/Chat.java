@@ -15,7 +15,7 @@ public class Chat {
     @Column(nullable = false, unique = true)
     private String title;
 
-    @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Message> messages = new ArrayList<>();
 
     @ManyToOne
@@ -35,6 +35,7 @@ public class Chat {
         return users;
     }
 
+    @Transactional
     public List<Message> getMessages() {
         return messages;
     }

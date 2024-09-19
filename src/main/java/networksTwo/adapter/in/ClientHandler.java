@@ -10,9 +10,11 @@ import java.util.UUID;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import networksTwo.adapter.out.ActiveSessions;
+import networksTwo.domain.model.Message;
 import networksTwo.domain.model.Session;
 import networksTwo.domain.model.User;
 import networksTwo.domain.service.ChatService;
+import networksTwo.domain.service.MessageService;
 import networksTwo.domain.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,13 +27,15 @@ public class ClientHandler implements Runnable {
     private final Socket clientSocket;
     private final UserService userService;
     private final ChatService chatService;
+    private final MessageService messageService;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final UUID sessionId;
 
-    public ClientHandler(Socket clientSocket, UserService userService, ChatService chatService) {
+    public ClientHandler(Socket clientSocket, UserService userService, ChatService chatService, MessageService messageService) {
         this.clientSocket = clientSocket;
         this.userService = userService;
         this.chatService = chatService;
+        this.messageService = messageService;
         sessionId = UUID.randomUUID();
         initializer();
     }
@@ -62,7 +66,7 @@ public class ClientHandler implements Runnable {
             while ((clientMessage = in.readLine()) != null) {
                 JsonNode rootNode = objectMapper.readTree(clientMessage);
                 String op = rootNode.path("operation").asText();
-                OperationHandler operationHandler = new OperationHandler(userService, chatService);
+                OperationHandler operationHandler = new OperationHandler(userService, chatService, messageService);
                 String response = operationHandler.handleOperation(op, rootNode, sessionId);
                 logger.info(response);
                 out.println(response);
