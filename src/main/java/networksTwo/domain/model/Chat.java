@@ -8,12 +8,8 @@ import java.util.*;
 @Entity
 public class Chat {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(nullable = false)
     private UUID id;
-
-    @Column(nullable = false, unique = true)
-    private String title;
 
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Message> messages = new ArrayList<>();
@@ -30,6 +26,9 @@ public class Chat {
     )
     private List<User> users = new ArrayList<>();
 
+
+
+
     @Transactional
     public List<User> getUsers() {
         return users;
@@ -44,15 +43,15 @@ public class Chat {
         return owner;
     }
 
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
     public void setOwner(User owner) {
         this.owner = owner;
     }
 
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
+    public UUID getId() {
+        return id;
     }
 }

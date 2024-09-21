@@ -29,19 +29,20 @@ public class ChatHandler {
         User owner = getUserFromToken(token, userService);
 
         String username = node.path("username").asText();
-        User user = userService.getByUsername(username);
-
-        if (user.getUsername().equals(owner.getUsername())) {
-            throw new Exception("You can not add yourself.");
+        if (username.equals(owner.getUsername())) {
+            throw new Exception("You can not create a chat with yourself.");
         }
 
-        String title = node.path("title").asText();
-        Chat existentChat = chatService.getChat(title);
+        UUID chatId = UUID.fromString(node.path("chatId").asText());
+        Chat existentChat = chatService.getChatById(chatId);
+
+        User user = userService.getByUsername(username);
+        PrintWriter out = getOutByUserId(user.getId());
 
         if (existentChat == null) {
             Chat chat = new Chat();
+            chat.setId(chatId);
             chat.setOwner(owner);
-            chat.setTitle(title);
             chat.getUsers().add(user);
             chat.getUsers().add(owner);
             chatService.createChat(chat);
@@ -52,32 +53,44 @@ public class ChatHandler {
             existentChat.getUsers().add(user);
             chatService.updateChat(existentChat);
         }
-        PrintWriter out = getOutByUserId(user.getId());
+
         if (out != null) {
-            out.println(handleString("update", "Chat created"));
+            out.println(handleString("chatUpdate", chatId.toString()));
         }
+
         return handleString("message", "Chat created successfully");
     }
 
-    public static String handleGetChat(UserService userService, JsonNode node) throws Exception {
+    public static String handleGetChats(UserService userService, JsonNode node) throws Exception {
         String token = node.path("token").asText();
         User owner = getUserFromToken(token, userService);
 
         List<Chat> chats = owner.getChats();
-        List<String> titles = new ArrayList<>();
-        for (Chat chat : chats) {
-            List<User> usersInChat = chat.getUsers();
-            if (usersInChat.size() == 2) {
-                for (User user : usersInChat) {
-                    if (!user.getUsername().equals(owner.getUsername())) {
-                        titles.add(user.getUsername());
-                    }
-                }
-            }else{
-                titles.add(chat.getTitle());
-            }
-        }
+        List<UUID> chatIds = chats.stream()
+                .map(Chat::getId)
+                .toList();
 
-        return handleString("message", titles.toString());
+        return handleString("message", chatIds.toString());
+    }
+
+    public static String handleGetSingleChat(UserService userService, ChatService chatService, JsonNode node) throws Exception {
+        String token = node.path("token").asText();
+        User owner = getUserFromToken(token, userService);
+
+        UUID chatId = UUID.fromString(node.path("chatId").asText());
+        Chat chat = chatService.getChatById(chatId);
+
+        List<String> filteredUsers = chat.getUsers().stream()
+                .map(User::getUsername)
+                .filter(username -> !username.equals(owner.getUsername()))
+                .toList();
+
+        String title;
+        if (filteredUsers.size() == 1){
+            title = filteredUsers.getFirst();
+        }else{
+            title = "Group: " + String.join(", ", filteredUsers);
+        }
+        return handleString("message", title);
     }
 }
