@@ -1,14 +1,11 @@
 package networksTwo.domain.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Column;
+import jakarta.persistence.*;
+import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 public class User {
@@ -29,6 +26,14 @@ public class User {
     @Pattern(regexp = "^[a-zA-Z0-9!@#$%^&*]+$", message = "Password must be alphanumeric and may include special characters")
     private String password;
 
+    @ManyToMany(mappedBy = "users", fetch = FetchType.EAGER)
+    private List<Chat> chats = new ArrayList<>();
+
+    @Transactional
+    public List<Chat> getChats() {
+        return chats;
+    }
+
     public void setUsername(@Pattern(regexp = "^[a-zA-Z]+$", message = "Username must be alpha") String username) {
         this.username = username;
     }
@@ -39,6 +44,10 @@ public class User {
 
     public void setPassword(@Pattern(regexp = "^[a-zA-Z0-9!@#$%^&*]+$", message = "Password must be alphanumeric and may include special characters") String password) {
         this.password = password;
+    }
+
+    public UUID getId() {
+        return id;
     }
 
     public String getUsername() {
@@ -52,6 +61,7 @@ public class User {
     public String getPassword() {
         return password;
     }
+
 
     @Override
     public String toString() {
