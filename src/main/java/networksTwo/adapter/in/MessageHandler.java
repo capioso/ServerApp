@@ -1,6 +1,9 @@
 package networksTwo.adapter.in;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import networksTwo.domain.model.Chat;
 import networksTwo.domain.model.Message;
 import networksTwo.domain.model.User;
@@ -28,7 +31,9 @@ public class MessageHandler {
         Chat chat = chatService.getChatById(chatId);
 
         String content = node.path("content").asText();
+        UUID messageId = UUID.randomUUID();
         Message message = new Message();
+        message.setId(messageId);
         message.setSender(owner.getId());
         message.setContent(content);
         message.setChat(chat);
@@ -40,11 +45,18 @@ public class MessageHandler {
         users.forEach(uuid -> {
             PrintWriter out = getOutByUserId(uuid);
             if (out != null) {
-                out.println(handleString("messageUpdate", chat.getId() + "," + owner.getUsername() + "," + content));
+                ObjectMapper objectMapper = new ObjectMapper();
+                ObjectNode updateNode = objectMapper.createObjectNode();
+
+                updateNode.put("chatId", chat.getId().toString());
+                updateNode.put("messageId", messageId.toString());
+                updateNode.put("username", owner.getUsername());
+                updateNode.put("content", content);
+                out.println(handleString("messageUpdate", updateNode.toString()));
             }
         });
 
-        return handleString("message", "Message sent successfully");
+        return handleString("message", String.valueOf(messageId));
     }
 
     public static String handleGetMessagesByChat(UserService userService, ChatService chatService, JsonNode node) throws Exception {
@@ -54,17 +66,27 @@ public class MessageHandler {
         UUID chatId = UUID.fromString(node.path("chatId").asText());
         Chat chat = chatService.getChatById(chatId);
 
-        List<String> messagesCleaned = new ArrayList<>();
-        chat.getMessages().forEach(message -> {
-            String contentInBase64 = Base64.getEncoder().encodeToString(message.getContent().getBytes());
+        ObjectMapper objectMapper = new ObjectMapper();
+        ArrayNode messagesArray = objectMapper.createArrayNode();
+
+        for (Message message : chat.getMessages()) {
             try {
                 User user = userService.getById(message.getSender());
-                messagesCleaned.add(message.getId() + "," + user.getUsername() + "," + contentInBase64);
+
+                ObjectNode messageNode = objectMapper.createObjectNode();
+                messageNode.put("id", message.getId().toString());
+                messageNode.put("sender", user.getUsername());
+                messageNode.put("content", message.getContent());
+
+                messagesArray.add(messageNode);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
+        }
 
-        });
-        return handleString("message", messagesCleaned.toString());
+        ObjectNode resultNode = objectMapper.createObjectNode();
+        resultNode.set("messages", messagesArray);
+
+        return handleString("message", resultNode.toString());
     }
 }

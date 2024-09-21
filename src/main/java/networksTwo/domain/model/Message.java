@@ -7,7 +7,6 @@ import java.util.UUID;
 @Entity
 public class Message {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(nullable = false)
     private UUID id;
 
@@ -20,6 +19,7 @@ public class Message {
     @ManyToOne
     @JoinColumn(name = "chatId", nullable = false)
     private Chat chat;
+
 
     public void setSender(UUID sender) {
         this.sender = sender;
@@ -40,7 +40,9 @@ public class Message {
     public String getContent() {
         return content;
     }
-
+    public void setId(UUID id) {
+        this.id = id;
+    }
     public UUID getId() {
         return id;
     }
