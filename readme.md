@@ -10,6 +10,9 @@
 ## Version 3
 > Database implementation
 
+## Version 4
+> Users can send messages, create chats and alert to other logged users.
+
 ## Before running
 ### Server connection
 > Once the application server has been set into any cloud, it is better to create a connection from your local to the server, it is better to use SSH then create your private and public key and obviously, install SSH into the server and upload the public Key.
@@ -39,7 +42,8 @@
 > SERVER_PORT # Port to expose the server
 > KEYSTORE_PASSWORD # TLS CONFIGURATION
 > KEYSTORE_PATH # TLS CONFIGURATION
-> 
+> JWT_KEYSTORE_PASS # PUBLIC/PRIVATE KEYS FOR TOKEN GENERATOR
+> JWT_KEYSTORE_PATH
 > # For the Database
 > DB_HOST
 > DB_PORT
@@ -59,3 +63,7 @@
 > ```shell
 > scp -i [PRIVATE_KEY_PATH] [PATH_TO_JAR] [USER]@[PUBLIC_IP_ADDRESS_TO_YOUR_SERVER]:~
 > ```
+
+## Start running
+> * Once the jar file has been uploaded to the server you can run the jar. (Check your java version from the server and from the application)
+> * Execute `java -jar file.jar`
