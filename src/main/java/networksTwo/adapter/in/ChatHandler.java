@@ -1,8 +1,8 @@
 package networksTwo.adapter.in;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import networksTwo.domain.model.Chat;
-import networksTwo.domain.model.User;
+import networksTwo.domain.model.database.Chat;
+import networksTwo.domain.model.database.User;
 import networksTwo.domain.service.ChatService;
 import networksTwo.domain.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;

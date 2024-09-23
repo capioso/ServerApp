@@ -1,8 +1,8 @@
 package networksTwo.domain.service;
 
 import networksTwo.adapter.out.ChatRepository;
-import networksTwo.domain.model.Chat;
-import networksTwo.domain.model.User;
+import networksTwo.domain.model.database.Chat;
+import networksTwo.domain.model.database.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

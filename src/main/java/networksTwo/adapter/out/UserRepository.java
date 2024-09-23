@@ -1,6 +1,6 @@
 package networksTwo.adapter.out;
 
-import networksTwo.domain.model.User;
+import networksTwo.domain.model.database.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

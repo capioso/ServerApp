@@ -7,7 +7,7 @@ public class Session {
     private UUID userId;
     private PrintWriter out;
 
-    public Session (UUID userId, PrintWriter out){
+    public Session(UUID userId, PrintWriter out) {
         this.userId = userId;
         this.out = out;
     }

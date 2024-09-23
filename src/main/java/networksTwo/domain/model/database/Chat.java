@@ -1,4 +1,4 @@
-package networksTwo.domain.model;
+package networksTwo.domain.model.database;
 
 import jakarta.persistence.*;
 import jakarta.transaction.Transactional;

@@ -3,12 +3,9 @@ package networksTwo.adapter.in;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.JsonNode;
 import networksTwo.adapter.out.ActiveSessions;
-import networksTwo.domain.model.User;
-import networksTwo.domain.service.ChatService;
+import networksTwo.domain.model.database.User;
 import networksTwo.domain.service.UserService;
-import org.hibernate.validator.constraints.br.CPF;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;

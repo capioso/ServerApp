@@ -4,7 +4,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import networksTwo.domain.model.User;
+import networksTwo.domain.model.database.User;
 import networksTwo.domain.service.UserService;
 
 import java.security.interfaces.RSAPrivateKey;
@@ -26,7 +26,7 @@ public class JwtUtils{
         }
     }
 
-    public static String generateToken(UUID userId) throws Exception {
+    public static String generateToken(UUID userId) {
         Algorithm algorithm = Algorithm.RSA256(rsaPublicKey, rsaPrivateKey);
         return JWT.create()
                 .withIssuer("capioso")
@@ -34,7 +34,7 @@ public class JwtUtils{
                 .sign(algorithm);
     }
 
-    public static DecodedJWT validateToken(String token) throws Exception {
+    public static DecodedJWT validateToken(String token) {
         Algorithm algorithm = Algorithm.RSA256(rsaPublicKey, null);
         JWTVerifier verifier = JWT.require(algorithm)
                 .withIssuer("capioso")
@@ -42,7 +42,7 @@ public class JwtUtils{
         return verifier.verify(token);
     }
 
-    public static User getUserFromToken(String token, UserService userService) throws Exception {
+    public static User getUserFromToken(String token, UserService userService) {
         DecodedJWT decodedJWT = validateToken(token);
         UUID id = UUID.fromString(decodedJWT.getSubject());
         return userService.getById(id);
