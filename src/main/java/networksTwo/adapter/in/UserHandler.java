@@ -4,8 +4,14 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.JsonNode;
 import networksTwo.adapter.out.ActiveSessions;
 import networksTwo.domain.model.User;
+import networksTwo.domain.service.ChatService;
 import networksTwo.domain.service.UserService;
+import org.hibernate.validator.constraints.br.CPF;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static networksTwo.utils.JwtUtils.generateToken;
@@ -14,9 +20,20 @@ import static networksTwo.utils.PasswordUtils.checkPassword;
 import static networksTwo.utils.PasswordUtils.hashPassword;
 import static networksTwo.utils.SerializerUtils.handleString;
 
+@Service
 public class UserHandler {
+    private final UserService userService;
 
-    public static String handleGetUser(UserService userService, JsonNode node) throws Exception {
+    @Autowired
+    public UserHandler(UserService userService) {
+        this.userService = userService;
+    }
+
+    public Optional<UserService> getUserService() {
+        return Optional.ofNullable(userService);
+    }
+
+    public String handleGetUser(JsonNode node) throws Exception {
         String token = node.path("token").asText();
         DecodedJWT decodedJWT = validateToken(token);
         String id = decodedJWT.getSubject();
@@ -26,7 +43,7 @@ public class UserHandler {
         return handleString("message", "User " + user.getUsername() + " found");
     }
 
-    public static String handleLogInUser(UserService userService, JsonNode node, UUID sessionId) throws Exception {
+    public String handleLogInUser(JsonNode node, UUID sessionId) throws Exception {
         String username = node.path("username").asText();
         String password = node.path("password").asText();
         User user = userService.getByUsername(username);
@@ -38,7 +55,7 @@ public class UserHandler {
         return handleString("token", token);
     }
 
-    public static String handleCreateUser(UserService userService, JsonNode node) throws Exception {
+    public String handleCreateUser(JsonNode node) throws Exception {
         String username = node.path("username").asText();
         String email = node.path("email").asText();
         String password = node.path("password").asText();

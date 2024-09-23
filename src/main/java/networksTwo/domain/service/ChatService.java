@@ -17,43 +17,25 @@ public class ChatService {
     private ChatRepository chatRepository;
 
     @Transactional
-    public void createChat(Chat chat) throws Exception {
-        try {
-            chatRepository.save(chat);
-        } catch (Exception e) {
-            throw new Exception("Chat not created: " + e.getMessage());
-        }
+    public void createChat(Chat chat) {
+        chatRepository.save(chat);
     }
 
     @Transactional
-    public void updateChat(Chat chat) throws Exception {
-        try {
-            chatRepository.save(chat);
-        } catch (Exception e) {
-            throw new Exception("Chat not updated: " + e.getMessage());
-        }
+    public void updateChat(Chat chat) {
+        chatRepository.save(chat);
     }
 
     @Transactional
-    public Chat getChatById(UUID chatId) throws Exception {
-        try {
-            return chatRepository.getChatById(chatId);
-        }catch (Exception e) {
-            throw new Exception("Chat not found: " + e.getMessage());
-        }
+    public Chat getChatById(UUID chatId) {
+        return chatRepository.getChatById(chatId);
     }
 
     @Transactional
-    public List<UUID> getReceptorsByChat(Chat chat, UUID sender) throws Exception {
-        try {
-            return chat.getUsers().stream()
-                    .map(User::getId)
-                    .filter(id -> !id.equals(sender))
-                    .toList();
-        }catch (Exception e) {
-            throw new Exception("Users by chat not retrieved: " + e.getMessage());
-        }
+    public List<UUID> getReceptorsByChat(Chat chat, UUID sender) {
+        return chat.getUsers().stream()
+                .map(User::getId)
+                .filter(id -> !id.equals(sender))
+                .toList();
     }
-
-
 }

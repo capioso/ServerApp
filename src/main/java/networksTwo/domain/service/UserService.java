@@ -11,57 +11,35 @@ import java.util.UUID;
 @Service
 public class UserService {
 
+    private final UserRepository userRepository;
+
     @Autowired
-    private UserRepository userRepository;
-
-    @Transactional
-    public void createUser(User user) throws Exception {
-        try {
-            userRepository.save(user);
-        } catch (Exception e) {
-            throw new Exception("User not created: " + e.getMessage());
-        }
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     @Transactional
-    public User getById(UUID id) throws Exception {
-        try {
-            User user = userRepository.findById(id);
-            if (user == null) {
-                throw new Exception("User with id " + id + " not found");
-            }
-            user.getChats().size();
-            return user;
-        } catch (Exception e) {
-            throw new Exception("User not found by id: " + e.getMessage());
-        }
+    public void createUser(User user) {
+        userRepository.save(user);
+    }
+
+    @Transactional(readOnly = true)
+    public User getById(UUID id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User with id " + id + " not found"));
+    }
+
+    @Transactional(readOnly = true)
+    public User getByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User with username " + username + " not found"));
     }
 
     @Transactional
-    public User getByUsername(String username) throws Exception {
-        try {
-            User user = userRepository.findByUsername(username);
-            if (user == null) {
-                throw new Exception("User with username " + username + " not found");
-            }
-            user.getChats().size();
-            return user;
-        } catch (Exception e) {
-            throw new Exception("User not found by username: " + e.getMessage());
-        }
-    }
+    public void deleteByUsername(String username) {
+        User existent = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User with username >" + username + "< does not exist."));
 
-    @Transactional
-    public void deleteByUsername(String username) throws Exception {
-        try {
-            User existent = userRepository.findByUsername(username);
-            if (existent != null) {
-                userRepository.delete(existent);
-            } else {
-                throw new Exception("User with username >" + username + "<, do not exist.");
-            }
-        } catch (Exception e) {
-            throw new Exception("User deletion failed: " + e.getMessage());
-        }
+        userRepository.delete(existent);
     }
 }

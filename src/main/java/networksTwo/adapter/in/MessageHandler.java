@@ -8,22 +8,31 @@ import networksTwo.domain.model.Chat;
 import networksTwo.domain.model.Message;
 import networksTwo.domain.model.User;
 import networksTwo.domain.service.ChatService;
-import networksTwo.domain.service.MessageService;
 import networksTwo.domain.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 
-import static networksTwo.adapter.in.ChatHandler.getUserFromToken;
 import static networksTwo.domain.service.SessionService.getOutByUserId;
+import static networksTwo.utils.JwtUtils.getUserFromToken;
 import static networksTwo.utils.SerializerUtils.handleString;
 
+@Service
 public class MessageHandler {
 
-    public static String handleSendMessage(UserService userService, ChatService chatService, JsonNode node) throws Exception {
+    private final UserService userService;
+    private final ChatService chatService;
+
+    @Autowired
+    public MessageHandler(UserService userService, ChatService chatService) {
+        this.userService = userService;
+        this.chatService = chatService;
+    }
+
+    public String handleSendMessage(JsonNode node) throws Exception {
         String token = node.path("token").asText();
         User owner = getUserFromToken(token, userService);
 
@@ -59,7 +68,7 @@ public class MessageHandler {
         return handleString("message", String.valueOf(messageId));
     }
 
-    public static String handleGetMessagesByChat(UserService userService, ChatService chatService, JsonNode node) throws Exception {
+    public String handleGetMessagesByChat(JsonNode node) throws Exception {
         String token = node.path("token").asText();
         User owner = getUserFromToken(token, userService);
 

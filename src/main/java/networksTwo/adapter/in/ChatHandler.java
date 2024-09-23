@@ -1,30 +1,34 @@
 package networksTwo.adapter.in;
 
-import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.JsonNode;
 import networksTwo.domain.model.Chat;
 import networksTwo.domain.model.User;
 import networksTwo.domain.service.ChatService;
 import networksTwo.domain.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import static networksTwo.domain.service.SessionService.getOutByUserId;
-import static networksTwo.utils.JwtUtils.validateToken;
+import static networksTwo.utils.JwtUtils.getUserFromToken;
 import static networksTwo.utils.SerializerUtils.handleString;
 
+@Service
 public class ChatHandler {
 
-    public static User getUserFromToken(String token, UserService userService) throws Exception {
-        DecodedJWT decodedJWT = validateToken(token);
-        UUID id = UUID.fromString(decodedJWT.getSubject());
-        return userService.getById(id);
+    private final UserService userService;
+    private final ChatService chatService;
+
+    @Autowired
+    public ChatHandler(UserService userService, ChatService chatService) {
+        this.userService = userService;
+        this.chatService = chatService;
     }
 
-    public static String handleCreateChat(UserService userService, ChatService chatService, JsonNode node) throws Exception {
+    public String handleCreateChat(JsonNode node) throws Exception {
         String token = node.path("token").asText();
         User owner = getUserFromToken(token, userService);
 
@@ -61,7 +65,7 @@ public class ChatHandler {
         return handleString("message", "Chat created successfully");
     }
 
-    public static String handleGetChats(UserService userService, JsonNode node) throws Exception {
+    public String handleGetChats(JsonNode node) throws Exception {
         String token = node.path("token").asText();
         User owner = getUserFromToken(token, userService);
 
@@ -73,7 +77,7 @@ public class ChatHandler {
         return handleString("message", chatIds.toString());
     }
 
-    public static String handleGetSingleChat(UserService userService, ChatService chatService, JsonNode node) throws Exception {
+    public String handleGetSingleChat(JsonNode node) throws Exception {
         String token = node.path("token").asText();
         User owner = getUserFromToken(token, userService);
 

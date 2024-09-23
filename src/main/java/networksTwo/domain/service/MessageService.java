@@ -12,11 +12,7 @@ public class MessageService {
     private MessageRepository messageRepository;
 
     @Transactional
-    public void createMessage(Message message) throws Exception {
-        try {
-            messageRepository.save(message);
-        }catch (Exception e) {
-            throw new Exception("Message not created: " + e.getMessage());
-        }
+    public void createMessage(Message message) {
+        messageRepository.save(message);
     }
 }

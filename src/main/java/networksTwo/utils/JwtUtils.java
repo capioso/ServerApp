@@ -4,6 +4,8 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import networksTwo.domain.model.User;
+import networksTwo.domain.service.UserService;
 
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
@@ -38,5 +40,11 @@ public class JwtUtils{
                 .withIssuer("capioso")
                 .build();
         return verifier.verify(token);
+    }
+
+    public static User getUserFromToken(String token, UserService userService) throws Exception {
+        DecodedJWT decodedJWT = validateToken(token);
+        UUID id = UUID.fromString(decodedJWT.getSubject());
+        return userService.getById(id);
     }
 }
