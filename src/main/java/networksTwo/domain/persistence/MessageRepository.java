@@ -1,6 +1,6 @@
-package networksTwo.adapter.out;
+package networksTwo.domain.persistence;
 
-import networksTwo.domain.model.database.Message;
+import networksTwo.domain.model.Message;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

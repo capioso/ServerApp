@@ -1,8 +1,8 @@
-package networksTwo.domain.service;
+package networksTwo.application.service;
 
 import jakarta.transaction.Transactional;
-import networksTwo.adapter.out.MessageRepository;
-import networksTwo.domain.model.database.Message;
+import networksTwo.domain.persistence.MessageRepository;
+import networksTwo.domain.model.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

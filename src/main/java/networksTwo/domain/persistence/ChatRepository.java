@@ -1,6 +1,6 @@
-package networksTwo.adapter.out;
+package networksTwo.domain.persistence;
 
-import networksTwo.domain.model.database.Chat;
+import networksTwo.domain.model.Chat;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

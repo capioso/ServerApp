@@ -1,9 +1,9 @@
-package networksTwo.adapter.in;
+package networksTwo.application.handler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.annotation.PostConstruct;
-import networksTwo.domain.model.Operation;
-import networksTwo.domain.model.database.User;
+import networksTwo.domain.enums.Operation;
+import networksTwo.domain.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

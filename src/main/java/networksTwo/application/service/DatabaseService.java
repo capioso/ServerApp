@@ -1,4 +1,4 @@
-package networksTwo.domain.service;
+package networksTwo.application.service;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;

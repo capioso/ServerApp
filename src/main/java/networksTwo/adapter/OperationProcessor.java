@@ -1,4 +1,4 @@
-package networksTwo.adapter.in;
+package networksTwo.adapter;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,25 +8,25 @@ import java.net.Socket;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import networksTwo.adapter.out.ActiveSessions;
+import networksTwo.domain.persistence.SessionRepository;
+import networksTwo.application.handler.OperationHandler;
 import networksTwo.domain.model.Session;
+import networksTwo.utils.ObjectMapperUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ClientHandler implements Runnable {
+public class OperationProcessor implements Runnable {
 
-    private static final Logger logger = LoggerFactory.getLogger(ClientHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(OperationProcessor.class);
 
     private final Socket clientSocket;
-    private final ObjectMapper objectMapper = new ObjectMapper();
     private final UUID sessionId;
     private final OperationHandler operationHandler;
 
-    public ClientHandler(Socket clientSocket, OperationHandler operationHandler) {
+    public OperationProcessor(Socket clientSocket, OperationHandler operationHandler, UUID sessionId) {
         this.clientSocket = clientSocket;
         this.operationHandler = operationHandler;
-        sessionId = UUID.randomUUID();
+        this.sessionId = sessionId;
     }
 
     @Override
@@ -37,20 +37,19 @@ public class ClientHandler implements Runnable {
         ) {
             String clientMessage;
 
-            ActiveSessions.activeUsers.put(sessionId, new Session(null, out));
+            SessionRepository.activeUsers.put(sessionId, new Session(null, out));
 
             while ((clientMessage = in.readLine()) != null) {
-                JsonNode rootNode = objectMapper.readTree(clientMessage);
+                JsonNode rootNode = ObjectMapperUtils.getInstance().readTree(clientMessage);
                 String op = rootNode.path("operation").asText();
                 String response = operationHandler.handleOperation(op, rootNode, sessionId);
-
                 logger.info(response);
                 out.println(response);
             }
         } catch (Exception e) {
             logger.error(e.getMessage());
         } finally {
-            ActiveSessions.activeUsers.remove(sessionId);
+            SessionRepository.activeUsers.remove(sessionId);
             try {
                 if (clientSocket != null && !clientSocket.isClosed()) {
                     clientSocket.close();

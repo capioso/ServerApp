@@ -1,4 +1,4 @@
-package networksTwo.domain.model;
+package networksTwo.domain.enums;
 
 public enum Operation {
     CREATE_USER,

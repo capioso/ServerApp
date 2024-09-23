@@ -1,14 +1,14 @@
-package networksTwo.adapter.in;
+package networksTwo.application.handler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import networksTwo.domain.model.database.Chat;
-import networksTwo.domain.model.database.Message;
-import networksTwo.domain.model.database.User;
-import networksTwo.domain.service.ChatService;
-import networksTwo.domain.service.UserService;
+import networksTwo.domain.model.Chat;
+import networksTwo.domain.model.Message;
+import networksTwo.domain.model.User;
+import networksTwo.application.service.ChatService;
+import networksTwo.application.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +16,7 @@ import java.io.PrintWriter;
 import java.util.List;
 import java.util.UUID;
 
-import static networksTwo.domain.service.SessionService.getOutByUserId;
+import static networksTwo.application.service.SessionService.getOutByUserId;
 import static networksTwo.utils.JwtUtils.getUserFromToken;
 import static networksTwo.utils.SerializerUtils.handleString;
 

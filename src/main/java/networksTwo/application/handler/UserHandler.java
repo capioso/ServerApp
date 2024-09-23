@@ -1,10 +1,10 @@
-package networksTwo.adapter.in;
+package networksTwo.application.handler;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.JsonNode;
-import networksTwo.adapter.out.ActiveSessions;
-import networksTwo.domain.model.database.User;
-import networksTwo.domain.service.UserService;
+import networksTwo.domain.persistence.SessionRepository;
+import networksTwo.application.service.UserService;
+import networksTwo.domain.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -48,7 +48,7 @@ public class UserHandler {
             throw new Exception("Bad credentials");
         }
         String token = generateToken(user.getId());
-        ActiveSessions.activeUsers.get(sessionId).setUserId(user.getId());
+        SessionRepository.activeUsers.get(sessionId).setUserId(user.getId());
         return handleString("token", token);
     }
 

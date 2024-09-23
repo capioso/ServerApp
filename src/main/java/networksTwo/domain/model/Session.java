@@ -5,7 +5,7 @@ import java.util.UUID;
 
 public class Session {
     private UUID userId;
-    private PrintWriter out;
+    private final PrintWriter out;
 
     public Session(UUID userId, PrintWriter out) {
         this.userId = userId;
@@ -14,10 +14,6 @@ public class Session {
 
     public PrintWriter getOut() {
         return out;
-    }
-
-    public void setOut(PrintWriter out) {
-        this.out = out;
     }
 
     public UUID getUserId() {

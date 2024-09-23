@@ -1,7 +1,7 @@
-package networksTwo.domain.service;
+package networksTwo.application.service;
 
-import networksTwo.domain.model.database.User;
-import networksTwo.adapter.out.UserRepository;
+import networksTwo.domain.model.User;
+import networksTwo.domain.persistence.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
