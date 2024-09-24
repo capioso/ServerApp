@@ -14,7 +14,6 @@ import static networksTwo.utils.JwtUtils.generateToken;
 import static networksTwo.utils.JwtUtils.validateToken;
 import static networksTwo.utils.PasswordUtils.checkPassword;
 import static networksTwo.utils.PasswordUtils.hashPassword;
-import static networksTwo.utils.SerializerUtils.handleString;
 
 @Service
 public class UserHandler {
@@ -29,13 +28,6 @@ public class UserHandler {
         return Optional.ofNullable(userService);
     }
 
-    /**
-     * It extracts the parameters from node, creates the user object and save it on DB.
-     *
-     * @param node request from client.
-     * @return a string parsed to Json.
-     * @throws Exception if anything fails.
-     */
     public String handleCreateUser(JsonNode node) throws Exception {
         String username = node.path("username").asText();
         String email = node.path("email").asText();
@@ -53,7 +45,7 @@ public class UserHandler {
                 .filter(created -> created)
                 .orElseThrow(() -> new RuntimeException("User creation failed"));
 
-        return handleString("message", "User created successfully");
+        return "User created successfully";
     }
 
     public String handleLogInUser(JsonNode node, UUID sessionId) throws Exception {
@@ -71,7 +63,7 @@ public class UserHandler {
                 .orElseThrow(() -> new RuntimeException("Token not generated"));
 
         setUserIdBySessionId(sessionId, user.getId());
-        return handleString("message", token);
+        return token;
     }
 
     public String handleGetUser(JsonNode node) throws Exception {
@@ -84,6 +76,6 @@ public class UserHandler {
         User user = userService.getByUsername(username)
                 .orElseThrow(() -> new Exception("User not found"));
 
-        return handleString("message", "User " + user.getUsername() + " found");
+        return "User " + user.getUsername() + " found";
     }
 }

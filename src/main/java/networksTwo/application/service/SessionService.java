@@ -2,7 +2,7 @@ package networksTwo.application.service;
 
 import networksTwo.domain.model.Session;
 
-import java.io.PrintWriter;
+import java.io.OutputStream;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -10,7 +10,7 @@ import static networksTwo.domain.repository.SessionRepository.ACTIVE_USERS;
 
 public class SessionService {
 
-    public static Optional<Boolean> createSession(UUID id, PrintWriter out) {
+    public static Optional<Boolean> createSession(UUID id, OutputStream out) {
         try {
             ACTIVE_USERS.put(id, new Session(null, out));
             return Optional.of(true);
@@ -37,7 +37,7 @@ public class SessionService {
         }
     }
 
-    public static Optional<PrintWriter> getOutByUserId(UUID id){
+    public static Optional<OutputStream> getOutByUserId(UUID id){
         try {
             return ACTIVE_USERS.values().stream()
                     .filter(session -> session.getUserId().equals(id))

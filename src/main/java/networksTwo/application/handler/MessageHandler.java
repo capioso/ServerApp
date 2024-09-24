@@ -1,24 +1,24 @@
 package networksTwo.application.handler;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import networksTwo.domain.dto.MessageDto;
 import networksTwo.domain.model.Chat;
 import networksTwo.domain.model.Message;
+import networksTwo.domain.model.Response;
 import networksTwo.domain.model.User;
 import networksTwo.application.service.ChatService;
 import networksTwo.application.service.UserService;
-import networksTwo.utils.ObjectMapperUtils;
+import networksTwo.utils.MessagePackUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static networksTwo.application.service.SessionService.getOutByUserId;
 import static networksTwo.utils.JwtUtils.getUserFromToken;
-import static networksTwo.utils.SerializerUtils.handleString;
 
 @Service
 public class MessageHandler {
@@ -32,7 +32,7 @@ public class MessageHandler {
         this.chatService = chatService;
     }
 
-    public String handleSendMessage(JsonNode node) throws Exception {
+    public UUID handleSendMessage(JsonNode node) throws Exception {
         String token = node.path("token").asText();
         User owner = getUserFromToken(token, userService)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -60,23 +60,31 @@ public class MessageHandler {
 
         users.forEach(uuid -> getOutByUserId(uuid).ifPresent(
                 out -> {
-                    ObjectNode updateNode = ObjectMapperUtils.getInstance().createObjectNode();
+                    ObjectNode updateNode = MessagePackUtils.getInstance().createObjectNode();
 
                     updateNode.put("chatId", chat.getId().toString());
                     updateNode.put("messageId", messageId.toString());
                     updateNode.put("username", owner.getUsername());
                     updateNode.put("content", content);
 
-                    out.println(handleString("messageUpdate", updateNode.toString()));
+                    try {
+                        Response otherClient = new Response("messageUpdate", updateNode.toString());
+                        byte[] responseBytes = MessagePackUtils.getInstance().writeValueAsBytes(otherClient);
+                        out.write(responseBytes);
+                        out.flush();
+                    }catch (Exception e) {
+                        throw new RuntimeException("Failed to send response to user: {}", e.getCause());
+                    }
                 }
         ));
 
-        return handleString("message", String.valueOf(messageId));
+        return messageId;
     }
 
-    public String handleGetMessagesByChat(JsonNode node) throws Exception {
+    public List<MessageDto> handleGetMessagesByChat(JsonNode node) throws Exception {
         String token = node.path("token").asText();
-        getUserFromToken(token, userService);
+        getUserFromToken(token, userService)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         UUID chatId = UUID.fromString(node.path("chatId").asText());
 
@@ -84,27 +92,23 @@ public class MessageHandler {
                 new RuntimeException("Chat not found with id: " + chatId)
         );
 
-        ArrayNode messagesArray = ObjectMapperUtils.getInstance().createArrayNode();
+        return chat.getMessages().stream()
+                .map(this::convertToMessageDto)
+                .collect(Collectors.toList());
+    }
 
-        for (Message message : chat.getMessages()) {
-            try {
-                User user = userService.getById(message.getSender())
-                        .orElseThrow(() -> new RuntimeException("No user found with given id"));
+    private MessageDto convertToMessageDto(Message message) {
+        try {
+            User user = userService.getById(message.getSender())
+                    .orElseThrow(() -> new RuntimeException("No user found with given id"));
 
-                ObjectNode messageNode = ObjectMapperUtils.getInstance().createObjectNode();
-                messageNode.put("id", message.getId().toString());
-                messageNode.put("sender", user.getUsername());
-                messageNode.put("content", message.getContent());
-
-                messagesArray.add(messageNode);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+            return new MessageDto(
+                    message.getId(),
+                    user.getUsername(),
+                    message.getContent()
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("Error processing message with id " + message.getId() + ": " + e.getMessage(), e);
         }
-
-        ObjectNode resultNode = ObjectMapperUtils.getInstance().createObjectNode();
-        resultNode.set("messages", messagesArray);
-
-        return handleString("message", resultNode.toString());
     }
 }

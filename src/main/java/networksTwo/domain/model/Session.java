@@ -1,18 +1,18 @@
 package networksTwo.domain.model;
 
-import java.io.PrintWriter;
+import java.io.OutputStream;
 import java.util.UUID;
 
 public class Session {
     private UUID userId;
-    private final PrintWriter out;
+    private final OutputStream out;
 
-    public Session(UUID userId, PrintWriter out) {
+    public Session(UUID userId, OutputStream out) {
         this.userId = userId;
         this.out = out;
     }
 
-    public PrintWriter getOut() {
+    public OutputStream getOut() {
         return out;
     }
 

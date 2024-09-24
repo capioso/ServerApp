@@ -1,15 +1,14 @@
 package networksTwo.adapter;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import networksTwo.application.handler.OperationHandler;
-import networksTwo.utils.ObjectMapperUtils;
+import networksTwo.domain.model.Response;
+import networksTwo.utils.MessagePackUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +18,6 @@ import static networksTwo.application.service.SessionService.deleteSessionById;
 public class OperationProcessor implements Runnable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OperationProcessor.class);
-
     private final Socket clientSocket;
     private final UUID sessionId;
     private final OperationHandler operationHandler;
@@ -33,21 +31,23 @@ public class OperationProcessor implements Runnable {
     @Override
     public void run() {
         try (
-                BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)
+                InputStream in = clientSocket.getInputStream();
+                OutputStream out = clientSocket.getOutputStream();
         ) {
-            String clientMessage;
+            byte[] buffer = new byte[1024];
+            int bytesRead;
 
             createSession(sessionId, out)
                     .filter(created -> created)
                     .orElseThrow(() -> new RuntimeException("Could not create session"));
 
-            while ((clientMessage = in.readLine()) != null) {
-                JsonNode rootNode = ObjectMapperUtils.getInstance().readTree(clientMessage);
-                String op = rootNode.path("operation").asText();
-                String response = operationHandler.handleOperation(op, rootNode, sessionId);
-                LOGGER.info(response);
-                out.println(response);
+            while ((bytesRead = in.read(buffer)) != -1) {
+                byte[] clientMessageBytes = Arrays.copyOf(buffer, bytesRead);
+                JsonNode rootNode = MessagePackUtils.getInstance().readTree(clientMessageBytes);
+                Response response = operationHandler.handleOperation(rootNode, sessionId);
+                byte[] responseBytes = MessagePackUtils.getInstance().writeValueAsBytes(response);
+                out.write(responseBytes);
+                out.flush();
             }
         } catch (Exception e) {
             LOGGER.error(e.getMessage());

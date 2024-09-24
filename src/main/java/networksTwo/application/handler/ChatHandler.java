@@ -3,8 +3,10 @@ package networksTwo.application.handler;
 import com.fasterxml.jackson.databind.JsonNode;
 import networksTwo.application.service.ChatService;
 import networksTwo.domain.model.Chat;
+import networksTwo.domain.model.Response;
 import networksTwo.domain.model.User;
 import networksTwo.application.service.UserService;
+import networksTwo.utils.MessagePackUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.ExpressionException;
 import org.springframework.stereotype.Service;
@@ -15,7 +17,6 @@ import java.util.UUID;
 
 import static networksTwo.application.service.SessionService.getOutByUserId;
 import static networksTwo.utils.JwtUtils.getUserFromToken;
-import static networksTwo.utils.SerializerUtils.handleString;
 
 @Service
 public class ChatHandler {
@@ -66,23 +67,29 @@ public class ChatHandler {
         );
 
         getOutByUserId(user.getId())
-                .ifPresent(printWriter ->
-                        printWriter.println(handleString("chatUpdate", chatId.toString()))
+                .ifPresent(outputStream -> {
+                            try {
+                                Response otherClient = new Response("chatUpdate", chatId.toString());
+                                byte[] responseBytes = MessagePackUtils.getInstance().writeValueAsBytes(otherClient);
+                                outputStream.write(responseBytes);
+                                outputStream.flush();
+                            }catch (Exception e) {
+                                throw new RuntimeException("Failed to send response to user: {}", e.getCause());
+                            }
+                        }
                 );
 
-        return handleString("message", "Chat created successfully");
+        return "Chat created successfully";
     }
 
-    public String handleGetChats(JsonNode node) throws Exception {
+    public List<UUID> handleGetChats(JsonNode node) throws Exception {
         String token = node.path("token").asText();
         User owner = getUserFromToken(token, userService)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        List<UUID> chatIds = owner.getChats().stream()
+        return owner.getChats().stream()
                 .map(Chat::getId)
                 .toList();
-
-        return handleString("message", chatIds.toString());
     }
 
     public String handleGetSingleChat(JsonNode node) throws Exception {
@@ -107,6 +114,6 @@ public class ChatHandler {
             title = "Group: " + String.join(", ", filteredUsers);
         }
 
-        return handleString("message", title);
+        return title;
     }
 }

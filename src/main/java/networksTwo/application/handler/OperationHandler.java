@@ -3,6 +3,7 @@ package networksTwo.application.handler;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.annotation.PostConstruct;
 import networksTwo.domain.enums.Operation;
+import networksTwo.domain.model.Response;
 import networksTwo.domain.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,8 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
-
-import static networksTwo.utils.SerializerUtils.handleString;
 
 @Component
 public class OperationHandler {
@@ -49,11 +48,11 @@ public class OperationHandler {
         });
     }
 
-    public String handleOperation(String op, JsonNode rootNode, UUID sessionId) {
+    public Response handleOperation(JsonNode rootNode, UUID sessionId) {
         try {
-            Operation operation = Operation.valueOf(op);
+            Operation operation = Operation.valueOf(rootNode.path("operation").asText());
 
-            return switch (operation) {
+            Object body = switch (operation) {
                 case Operation.CREATE_USER -> userHandler.handleCreateUser(rootNode);
                 case Operation.LOGIN_USER -> userHandler.handleLogInUser(rootNode, sessionId);
                 case Operation.GET_USER -> userHandler.handleGetUser(rootNode);
@@ -62,11 +61,13 @@ public class OperationHandler {
                 case Operation.GET_SINGLE_CHAT -> chatHandler.handleGetSingleChat(rootNode);
                 case Operation.SEND_MESSAGE -> messageHandler.handleSendMessage(rootNode);
                 case Operation.GET_MESSAGES_BY_CHAT -> messageHandler.handleGetMessagesByChat(rootNode);
-                default -> throw new IllegalStateException("Unexpected value: " + op);
+                default -> throw new IllegalStateException("Unexpected value: " + operation.name());
             };
+            LOGGER.info("Operation: {} | Body: {}", operation, body);
+            return new Response("message", body);
         } catch (Exception e) {
             LOGGER.error("Error handling operation: {}", e.getMessage());
-            return handleString("Error", e.getMessage());
+            return new Response("Error", e.getMessage());
         }
     }
 }
