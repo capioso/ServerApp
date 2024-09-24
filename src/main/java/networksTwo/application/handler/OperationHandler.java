@@ -49,8 +49,8 @@ public class OperationHandler {
             Operation operation = Operation.valueOf(op);
 
             return switch (operation) {
-                case Operation.LOGIN_USER -> userHandler.handleLogInUser(rootNode, sessionId);
                 case Operation.CREATE_USER -> userHandler.handleCreateUser(rootNode);
+                case Operation.LOGIN_USER -> userHandler.handleLogInUser(rootNode, sessionId);
                 case Operation.GET_USER -> userHandler.handleGetUser(rootNode);
                 case Operation.CREATE_CHAT -> chatHandler.handleCreateChat(rootNode);
                 case Operation.GET_CHATS -> chatHandler.handleGetChats(rootNode);

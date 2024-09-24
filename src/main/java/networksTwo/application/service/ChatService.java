@@ -8,13 +8,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class ChatService {
 
+    private final ChatRepository chatRepository;
+
     @Autowired
-    private ChatRepository chatRepository;
+    public ChatService(ChatRepository chatRepository) {
+        this.chatRepository = chatRepository;
+    }
 
     @Transactional
     public void createChat(Chat chat) {
@@ -27,15 +33,16 @@ public class ChatService {
     }
 
     @Transactional
-    public Chat getChatById(UUID chatId) {
-        return chatRepository.getChatById(chatId);
+    public Optional<Chat> getById(UUID id) {
+        return chatRepository.findById(id);
     }
 
     @Transactional
-    public List<UUID> getReceptorsByChat(Chat chat, UUID sender) {
-        return chat.getUsers().stream()
+    public Optional<List<UUID>> getReceptorsByChat(Chat chat, UUID sender) {
+        List<UUID> receivers = chat.getUsers().stream()
                 .map(User::getId)
                 .filter(id -> !id.equals(sender))
-                .toList();
+                .collect(Collectors.toList());
+        return receivers.isEmpty() ? Optional.empty() : Optional.of(receivers);
     }
 }

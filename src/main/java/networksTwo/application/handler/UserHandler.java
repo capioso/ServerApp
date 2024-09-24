@@ -30,37 +30,60 @@ public class UserHandler {
         return Optional.ofNullable(userService);
     }
 
-    public String handleGetUser(JsonNode node) throws Exception {
-        String token = node.path("token").asText();
-        DecodedJWT decodedJWT = validateToken(token);
-        String id = decodedJWT.getSubject();
-        System.out.println("UUID: " + id);
+    /**
+     * It extracts the parameters from node, creates the user object and save it on DB.
+     *
+     * @param node request from client.
+     * @return a string parsed to Json.
+     * @throws Exception if anything fails.
+     */
+    public String handleCreateUser(JsonNode node) throws Exception {
         String username = node.path("username").asText();
-        User user = userService.getByUsername(username);
-        return handleString("message", "User " + user.getUsername() + " found");
+        String email = node.path("email").asText();
+        String password = node.path("password").asText();
+
+        String hashedPassword = hashPassword(password)
+                .orElseThrow(() -> new RuntimeException("Password hashing failed"));
+
+        User newUser = new User();
+        newUser.setUsername(username);
+        newUser.setEmail(email);
+        newUser.setPassword(hashedPassword);
+
+        userService.createUser(newUser);
+
+        return handleString("message", "User created successfully");
     }
 
     public String handleLogInUser(JsonNode node, UUID sessionId) throws Exception {
         String username = node.path("username").asText();
         String password = node.path("password").asText();
-        User user = userService.getByUsername(username);
-        if (!checkPassword(password, user.getPassword())) {
-            throw new Exception("Bad credentials");
-        }
-        String token = generateToken(user.getId());
-        SessionRepository.activeUsers.get(sessionId).setUserId(user.getId());
+
+        User user = userService.getByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        checkPassword(password, user.getPassword())
+                .filter(valid -> valid)
+                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+
+        String token = generateToken(user.getId())
+                .orElseThrow(() -> new RuntimeException("Token not generated"));
+
+        SessionRepository.ACTIVE_USERS.get(sessionId).setUserId(user.getId());
+
         return handleString("token", token);
     }
 
-    public String handleCreateUser(JsonNode node) throws Exception {
+    public String handleGetUser(JsonNode node) throws Exception {
+        String token = node.path("token").asText();
         String username = node.path("username").asText();
-        String email = node.path("email").asText();
-        String password = node.path("password").asText();
-        User newUser = new User();
-        newUser.setUsername(username);
-        newUser.setEmail(email);
-        newUser.setPassword(hashPassword(password));
-        userService.createUser(newUser);
-        return handleString("message", "User created successfully");
+
+        validateToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid token"));
+
+        User user = userService.getByUsername(username)
+                .orElseThrow(() -> new Exception("User not found"));
+
+        return handleString("message", "User " + user.getUsername() + " found");
     }
 }

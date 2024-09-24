@@ -37,7 +37,7 @@ public class OperationProcessor implements Runnable {
         ) {
             String clientMessage;
 
-            SessionRepository.activeUsers.put(sessionId, new Session(null, out));
+            SessionRepository.ACTIVE_USERS.put(sessionId, new Session(null, out));
 
             while ((clientMessage = in.readLine()) != null) {
                 JsonNode rootNode = ObjectMapperUtils.getInstance().readTree(clientMessage);
@@ -54,7 +54,7 @@ public class OperationProcessor implements Runnable {
     }
 
     private void disconnectClient() {
-        SessionRepository.activeUsers.remove(sessionId);
+        SessionRepository.ACTIVE_USERS.remove(sessionId);
         try {
             if (clientSocket != null && !clientSocket.isClosed()) {
                 clientSocket.close();
