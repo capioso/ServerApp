@@ -19,7 +19,7 @@ public class OperationHandler {
     private final UserHandler userHandler;
     private final ChatHandler chatHandler;
     private final MessageHandler messageHandler;
-    private static final Logger logger = LoggerFactory.getLogger(OperationHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(OperationHandler.class);
 
     @Autowired
     public OperationHandler(UserHandler userHandler, ChatHandler chatHandler, MessageHandler messageHandler) {
@@ -43,7 +43,7 @@ public class OperationHandler {
                         .filter(deleted -> deleted)
                         .orElseThrow(() -> new RuntimeException("User deletion failed"));
             } catch (Exception e) {
-                logger.error("Error initializing userService: {}", e.getMessage());
+                LOGGER.error("Error initializing userService: {}", e.getMessage());
                 throw new RuntimeException("Error initializing userService: " + e.getMessage());
             }
         });
@@ -65,7 +65,7 @@ public class OperationHandler {
                 default -> throw new IllegalStateException("Unexpected value: " + op);
             };
         } catch (Exception e) {
-            logger.error("Error handling operation: {}", e.getMessage());
+            LOGGER.error("Error handling operation: {}", e.getMessage());
             return handleString("Error", e.getMessage());
         }
     }

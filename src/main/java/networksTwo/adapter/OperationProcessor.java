@@ -8,12 +8,13 @@ import java.net.Socket;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import networksTwo.domain.repository.SessionRepository;
 import networksTwo.application.handler.OperationHandler;
-import networksTwo.domain.model.Session;
 import networksTwo.utils.ObjectMapperUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static networksTwo.application.service.SessionService.createSession;
+import static networksTwo.application.service.SessionService.deleteSessionById;
 
 public class OperationProcessor implements Runnable {
 
@@ -37,7 +38,9 @@ public class OperationProcessor implements Runnable {
         ) {
             String clientMessage;
 
-            SessionRepository.ACTIVE_USERS.put(sessionId, new Session(null, out));
+            createSession(sessionId, out)
+                    .filter(created -> created)
+                    .orElseThrow(() -> new RuntimeException("Could not create session"));
 
             while ((clientMessage = in.readLine()) != null) {
                 JsonNode rootNode = ObjectMapperUtils.getInstance().readTree(clientMessage);
@@ -54,8 +57,11 @@ public class OperationProcessor implements Runnable {
     }
 
     private void disconnectClient() {
-        SessionRepository.ACTIVE_USERS.remove(sessionId);
         try {
+            deleteSessionById(sessionId)
+                    .filter(deleted -> deleted)
+                    .orElseThrow(() -> new RuntimeException("Could not delete session"));
+
             if (clientSocket != null && !clientSocket.isClosed()) {
                 clientSocket.close();
             }
