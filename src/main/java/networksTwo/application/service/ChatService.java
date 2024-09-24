@@ -45,4 +45,13 @@ public class ChatService {
                 .collect(Collectors.toList());
         return receivers.isEmpty() ? Optional.empty() : Optional.of(receivers);
     }
+
+    @Transactional
+    public Optional<List<String>> getTitlesByChatWithoutOwner(Chat chat, String ownerUsername) {
+        List<String> filteredUsers = chat.getUsers().stream()
+                .map(User::getUsername)
+                .filter(username -> !username.equals(ownerUsername))
+                .toList();
+        return filteredUsers.isEmpty() ? Optional.empty() : Optional.of(filteredUsers);
+    }
 }
