@@ -36,10 +36,15 @@ public class OperationHandler {
                 test.setUsername("test");
                 test.setEmail("test@gmail.com");
                 test.setPassword("encrypted");
-                userService.createUser(test);
-                userService.deleteByUsername(test.getUsername());
+                userService.createUser(test)
+                        .filter(created -> created)
+                        .orElseThrow(() -> new RuntimeException("User creation failed"));
+                userService.deleteByUsername(test.getUsername())
+                        .filter(deleted -> deleted)
+                        .orElseThrow(() -> new RuntimeException("User deletion failed"));
             } catch (Exception e) {
                 logger.error("Error initializing userService: {}", e.getMessage());
+                throw new RuntimeException("Error initializing userService: " + e.getMessage());
             }
         });
     }

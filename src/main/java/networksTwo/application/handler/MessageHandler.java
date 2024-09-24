@@ -52,26 +52,24 @@ public class MessageHandler {
         message.setChat(chat);
 
         chat.getMessages().add(message);
-        chatService.updateChat(chat);
+        chatService.updateChat(chat)
+                .orElseThrow(() -> new RuntimeException("Chat not updated"));
 
         List<UUID> users = chatService.getReceptorsByChat(chat, owner.getId())
                 .orElseThrow(() -> new RuntimeException("No receivers found for the chat."));
 
-        users.forEach(uuid -> getOutByUserId(uuid)
-                .ifPresentOrElse(
-                        out -> {
-                            ObjectNode updateNode = ObjectMapperUtils.getInstance().createObjectNode();
+        users.forEach(uuid -> getOutByUserId(uuid).ifPresent(
+                out -> {
+                    ObjectNode updateNode = ObjectMapperUtils.getInstance().createObjectNode();
 
-                            updateNode.put("chatId", chat.getId().toString());
-                            updateNode.put("messageId", messageId.toString());
-                            updateNode.put("username", owner.getUsername());
-                            updateNode.put("content", content);
+                    updateNode.put("chatId", chat.getId().toString());
+                    updateNode.put("messageId", messageId.toString());
+                    updateNode.put("username", owner.getUsername());
+                    updateNode.put("content", content);
 
-                            out.println(handleString("messageUpdate", updateNode.toString()));
-                        },
-                        () -> System.out.println("No PrintWriter found for userId: " + uuid)
-                ));
-
+                    out.println(handleString("messageUpdate", updateNode.toString()));
+                }
+        ));
 
         return handleString("message", String.valueOf(messageId));
     }
@@ -81,9 +79,8 @@ public class MessageHandler {
         getUserFromToken(token, userService);
 
         UUID chatId = UUID.fromString(node.path("chatId").asText());
-        Optional<Chat> optionalChat = chatService.getById(chatId);
 
-        Chat chat = optionalChat.orElseThrow(() ->
+        Chat chat = chatService.getById(chatId).orElseThrow(() ->
                 new RuntimeException("Chat not found with id: " + chatId)
         );
 

@@ -11,6 +11,7 @@ import java.util.UUID;
 
 @Repository
 public class JpaUserRepository implements UserRepository {
+
     private final SpringUserRepository springUserRepository;
 
     @Autowired
@@ -20,21 +21,39 @@ public class JpaUserRepository implements UserRepository {
 
     @Override
     public Optional<User> findByUsername(String username) {
-        return springUserRepository.findByUsername(username);
+        try {
+            return springUserRepository.findByUsername(username);
+        }catch (Exception e){
+            return Optional.empty();
+        }
     }
 
     @Override
     public Optional<User> findById(UUID id) {
-        return springUserRepository.findById(id);
+        try {
+            return springUserRepository.findById(id);
+        }catch (Exception e){
+            return Optional.empty();
+        }
     }
 
     @Override
-    public void save(User user) {
-        springUserRepository.save(user);
+    public Optional<Boolean> save(User user) {
+        try {
+            springUserRepository.save(user);
+            return Optional.of(true);
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 
     @Override
-    public void delete(User user) {
-        springUserRepository.delete(user);
+    public Optional<Boolean> delete(User user) {
+        try {
+            springUserRepository.delete(user);
+            return Optional.of(true);
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 }

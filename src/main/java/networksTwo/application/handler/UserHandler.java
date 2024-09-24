@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 import java.util.UUID;
 
+import static networksTwo.application.service.SessionService.setUserIdBySessionId;
 import static networksTwo.utils.JwtUtils.generateToken;
 import static networksTwo.utils.JwtUtils.validateToken;
 import static networksTwo.utils.PasswordUtils.checkPassword;
@@ -50,7 +51,9 @@ public class UserHandler {
         newUser.setEmail(email);
         newUser.setPassword(hashedPassword);
 
-        userService.createUser(newUser);
+        userService.createUser(newUser)
+                .filter(created -> created)
+                .orElseThrow(() -> new RuntimeException("User creation failed"));
 
         return handleString("message", "User created successfully");
     }
@@ -69,9 +72,8 @@ public class UserHandler {
         String token = generateToken(user.getId())
                 .orElseThrow(() -> new RuntimeException("Token not generated"));
 
-        SessionRepository.ACTIVE_USERS.get(sessionId).setUserId(user.getId());
-
-        return handleString("token", token);
+        setUserIdBySessionId(sessionId, user.getId());
+        return handleString("message", token);
     }
 
     public String handleGetUser(JsonNode node) throws Exception {

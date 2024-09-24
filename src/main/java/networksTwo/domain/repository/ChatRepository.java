@@ -8,5 +8,5 @@ import java.util.UUID;
 
 public interface ChatRepository {
     Optional<Chat> findById(UUID id);
-    void save(Chat chat);
+    Optional<Boolean> save(Chat chat);
 }

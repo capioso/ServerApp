@@ -20,8 +20,8 @@ public class UserService {
     }
 
     @Transactional
-    public void createUser(User user) {
-        userRepository.save(user);
+    public Optional<Boolean> createUser(User user) {
+        return userRepository.save(user);
     }
 
     @Transactional(readOnly = true)
@@ -35,10 +35,11 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteByUsername(String username) {
-        User existent = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User with username >" + username + "< does not exist."));
-
-        userRepository.delete(existent);
+    public Optional<Boolean> deleteByUsername(String username) {
+        Optional<User> existent = userRepository.findByUsername(username);
+        if (existent.isPresent()) {
+            return userRepository.delete(existent.get());
+        }
+        return Optional.empty();
     }
 }

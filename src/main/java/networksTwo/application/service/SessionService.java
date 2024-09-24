@@ -10,10 +10,23 @@ import static networksTwo.domain.repository.SessionRepository.ACTIVE_USERS;
 
 public class SessionService {
 
+    public static Optional<Boolean> setUserIdBySessionId(UUID sessionId, UUID userId) {
+        try {
+            ACTIVE_USERS.get(sessionId).setUserId(userId);
+            return Optional.of(true);
+        }catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
     public static Optional<PrintWriter> getOutByUserId(UUID id){
-        return ACTIVE_USERS.values().stream()
-                .filter(session -> session.getUserId().equals(id))
-                .map(Session::getOut)
-                .findFirst();
+        try {
+            return ACTIVE_USERS.values().stream()
+                    .filter(session -> session.getUserId().equals(id))
+                    .map(Session::getOut)
+                    .findFirst();
+        }catch (Exception e) {
+            return Optional.empty();
+        }
     }
 }

@@ -11,6 +11,7 @@ import java.util.UUID;
 
 @Repository
 public class JpaChatRepository implements ChatRepository {
+
     private final SpringChatRepository springChatRepository;
 
     @Autowired
@@ -20,12 +21,21 @@ public class JpaChatRepository implements ChatRepository {
 
     @Override
     public Optional<Chat> findById(UUID id) {
-        return springChatRepository.findById(id);
+        try {
+            return springChatRepository.findById(id);
+        }catch (Exception e) {
+            return Optional.empty();
+        }
     }
 
     @Override
-    public void save(Chat chat) {
-        springChatRepository.save(chat);
+    public Optional<Boolean> save(Chat chat) {
+        try {
+            springChatRepository.save(chat);
+            return Optional.of(true);
+        }catch (Exception e) {
+            return Optional.empty();
+        }
     }
 }
 

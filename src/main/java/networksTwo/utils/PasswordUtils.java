@@ -1,10 +1,15 @@
 package networksTwo.utils;
 
 import org.mindrot.jbcrypt.BCrypt;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
 public class PasswordUtils {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PasswordUtils.class);
+
     /**
      * Hash a password with Bcrypt.
      *
@@ -15,6 +20,7 @@ public class PasswordUtils {
         try {
             return Optional.of(BCrypt.hashpw(password, BCrypt.gensalt()));
         } catch (Exception e) {
+            LOGGER.error("Error while hashing password: {}", e.getMessage());
             return Optional.empty();
         }
     }
@@ -31,6 +37,7 @@ public class PasswordUtils {
             boolean matches = BCrypt.checkpw(password, hashed);
             return Optional.of(matches);
         } catch (Exception e) {
+            LOGGER.error("Error while checking password: {}", e.getMessage());
             return Optional.empty();
         }
     }

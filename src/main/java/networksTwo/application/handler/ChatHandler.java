@@ -51,7 +51,8 @@ public class ChatHandler {
                         throw new IllegalArgumentException("User already in chat.");
                     }
                     existentChat.getUsers().add(user);
-                    chatService.updateChat(existentChat);
+                    chatService.updateChat(existentChat)
+                            .orElseThrow(() -> new RuntimeException("Chat not updated."));
                 },
                 () -> {
                     Chat chat = new Chat();
@@ -59,7 +60,8 @@ public class ChatHandler {
                     chat.setOwner(owner);
                     chat.getUsers().add(user);
                     chat.getUsers().add(owner);
-                    chatService.createChat(chat);
+                    chatService.createChat(chat)
+                            .orElseThrow(() -> new RuntimeException("Chat not created."));
                 }
         );
 
@@ -91,9 +93,7 @@ public class ChatHandler {
         UUID chatId = UUID.fromString(node.path("chatId").asText());
 
         Chat chat = chatService.getById(chatId)
-                .orElseThrow(() ->
-                        new RuntimeException("Chat not found with id: " + chatId)
-                );
+                .orElseThrow(() -> new RuntimeException("Chat not found with id: " + chatId));
 
         List<String> filteredUsers = chat.getUsers().stream()
                 .map(User::getUsername)

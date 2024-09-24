@@ -10,6 +10,6 @@ import java.util.UUID;
 public interface UserRepository {
     Optional<User> findByUsername(String username);
     Optional<User> findById(UUID id);
-    void save(User user);
-    void delete(User user);
+    Optional<Boolean> save(User user);
+    Optional<Boolean> delete(User user);
 }

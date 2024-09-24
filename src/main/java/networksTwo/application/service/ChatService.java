@@ -23,13 +23,13 @@ public class ChatService {
     }
 
     @Transactional
-    public void createChat(Chat chat) {
-        chatRepository.save(chat);
+    public Optional<Boolean> createChat(Chat chat) {
+        return chatRepository.save(chat);
     }
 
     @Transactional
-    public void updateChat(Chat chat) {
-        chatRepository.save(chat);
+    public Optional<Boolean> updateChat(Chat chat) {
+        return chatRepository.save(chat);
     }
 
     @Transactional
