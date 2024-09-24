@@ -8,7 +8,7 @@ import java.net.Socket;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import networksTwo.domain.persistence.SessionRepository;
+import networksTwo.domain.repository.SessionRepository;
 import networksTwo.application.handler.OperationHandler;
 import networksTwo.domain.model.Session;
 import networksTwo.utils.ObjectMapperUtils;
@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 
 public class OperationProcessor implements Runnable {
 
-    private static final Logger logger = LoggerFactory.getLogger(OperationProcessor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(OperationProcessor.class);
 
     private final Socket clientSocket;
     private final UUID sessionId;
@@ -43,20 +43,24 @@ public class OperationProcessor implements Runnable {
                 JsonNode rootNode = ObjectMapperUtils.getInstance().readTree(clientMessage);
                 String op = rootNode.path("operation").asText();
                 String response = operationHandler.handleOperation(op, rootNode, sessionId);
-                logger.info(response);
+                LOGGER.info(response);
                 out.println(response);
             }
         } catch (Exception e) {
-            logger.error(e.getMessage());
+            LOGGER.error(e.getMessage());
         } finally {
-            SessionRepository.activeUsers.remove(sessionId);
-            try {
-                if (clientSocket != null && !clientSocket.isClosed()) {
-                    clientSocket.close();
-                }
-            } catch (IOException e) {
-                logger.error("Error closing socket: {}", e.getMessage());
+            disconnectClient();
+        }
+    }
+
+    private void disconnectClient() {
+        SessionRepository.activeUsers.remove(sessionId);
+        try {
+            if (clientSocket != null && !clientSocket.isClosed()) {
+                clientSocket.close();
             }
+        } catch (IOException e) {
+            LOGGER.error("Error closing socket: {}", e.getMessage());
         }
     }
 }

@@ -1,6 +1,6 @@
 package networksTwo.application.service;
 
-import networksTwo.domain.persistence.SessionRepository;
+import networksTwo.domain.repository.SessionRepository;
 import networksTwo.domain.model.Session;
 
 import java.io.PrintWriter;

@@ -2,7 +2,7 @@ package networksTwo.application.handler;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.JsonNode;
-import networksTwo.domain.persistence.SessionRepository;
+import networksTwo.domain.repository.SessionRepository;
 import networksTwo.application.service.UserService;
 import networksTwo.domain.model.User;
 import org.springframework.beans.factory.annotation.Autowired;

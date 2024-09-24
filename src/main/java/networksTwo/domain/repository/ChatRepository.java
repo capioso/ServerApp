@@ -1,4 +1,4 @@
-package networksTwo.domain.persistence;
+package networksTwo.domain.repository;
 
 import networksTwo.domain.model.Chat;
 import org.springframework.data.jpa.repository.JpaRepository;

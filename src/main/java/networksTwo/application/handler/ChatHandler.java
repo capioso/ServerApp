@@ -6,6 +6,7 @@ import networksTwo.domain.model.Chat;
 import networksTwo.domain.model.User;
 import networksTwo.application.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.expression.ExpressionException;
 import org.springframework.stereotype.Service;
 
 import java.io.PrintWriter;
@@ -34,7 +35,7 @@ public class ChatHandler {
 
         String username = node.path("username").asText();
         if (username.equals(owner.getUsername())) {
-            throw new Exception("You can not create a chat with yourself.");
+            throw new ExpressionException("You can not create a chat with yourself.");
         }
 
         UUID chatId = UUID.fromString(node.path("chatId").asText());
@@ -50,9 +51,9 @@ public class ChatHandler {
             chat.getUsers().add(user);
             chat.getUsers().add(owner);
             chatService.createChat(chat);
-        }else{
+        } else {
             if (existentChat.getUsers().contains(user)) {
-                throw new Exception("User already in chat.");
+                throw new IllegalArgumentException("User already in chat.");
             }
             existentChat.getUsers().add(user);
             chatService.updateChat(existentChat);
@@ -90,9 +91,9 @@ public class ChatHandler {
                 .toList();
 
         String title;
-        if (filteredUsers.size() == 1){
+        if (filteredUsers.size() == 1) {
             title = filteredUsers.getFirst();
-        }else{
+        } else {
             title = "Group: " + String.join(", ", filteredUsers);
         }
         return handleString("message", title);

@@ -1,6 +1,6 @@
 package networksTwo.application.service;
 
-import networksTwo.domain.persistence.ChatRepository;
+import networksTwo.domain.repository.ChatRepository;
 import networksTwo.domain.model.Chat;
 import networksTwo.domain.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
