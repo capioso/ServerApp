@@ -75,7 +75,7 @@ public class ChatHandler {
                                         .orElseThrow(() -> new RuntimeException("Chat not found."));
                                 Response otherClient = new Response(
                                         "chatUpdate",
-                                        new ChatDto(chatId, getTitle(registeredChat, owner.getUsername()))
+                                        new ChatDto(chatId, getTitle(registeredChat, user.getUsername()))
                                 );
                                 byte[] responseBytes = MessagePackUtils.getInstance().writeValueAsBytes(otherClient);
                                 outputStream.write(responseBytes);

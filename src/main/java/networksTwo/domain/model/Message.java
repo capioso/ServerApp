@@ -2,6 +2,7 @@ package networksTwo.domain.model;
 
 import jakarta.persistence.*;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -15,6 +16,9 @@ public class Message {
 
     @Column(nullable = false)
     private String content;
+
+    @Column(nullable = false, updatable = false)
+    private Instant createdAt;
 
     @ManyToOne
     @JoinColumn(name = "chatId", nullable = false)
@@ -49,5 +53,13 @@ public class Message {
 
     public UUID getSender() {
         return sender;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
     }
 }

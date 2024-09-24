@@ -3,6 +3,7 @@ package networksTwo.application.handler;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import networksTwo.domain.dto.MessageDto;
+import networksTwo.domain.dto.MessageToSendDto;
 import networksTwo.domain.model.Chat;
 import networksTwo.domain.model.Message;
 import networksTwo.domain.model.Response;
@@ -13,6 +14,7 @@ import networksTwo.utils.MessagePackUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -44,12 +46,15 @@ public class MessageHandler {
         );
 
         String content = node.path("content").asText();
+
+
         UUID messageId = UUID.randomUUID();
         Message message = new Message();
         message.setId(messageId);
         message.setSender(owner.getId());
         message.setContent(content);
         message.setChat(chat);
+        message.setCreatedAt(Instant.now());
 
         chat.getMessages().add(message);
         chatService.updateChat(chat)
@@ -68,8 +73,14 @@ public class MessageHandler {
                     updateNode.put("content", content);
 
                     try {
-                        Response otherClient = new Response("messageUpdate", updateNode.toString());
-                        byte[] responseBytes = MessagePackUtils.getInstance().writeValueAsBytes(otherClient);
+                        Response messageToSend = new Response(
+                                "messageUpdate", new MessageToSendDto(
+                                        chat.getId(),
+                                        messageId,
+                                        owner.getUsername(),
+                                        content
+                                ));
+                        byte[] responseBytes = MessagePackUtils.getInstance().writeValueAsBytes(messageToSend);
                         out.write(responseBytes);
                         out.flush();
                     }catch (Exception e) {
