@@ -1,49 +1,47 @@
 package networksTwo.config;
 
 import jakarta.annotation.PostConstruct;
-import networksTwo.domain.service.ChatService;
-import networksTwo.domain.service.MessageService;
-import org.hibernate.query.sql.internal.ParameterRecognizerImpl;
+import networksTwo.application.handler.OperationHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import networksTwo.adapter.in.ClientHandler;
-import networksTwo.domain.service.UserService;
+import networksTwo.adapter.OperationProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.net.ssl.SSLServerSocket;
 import java.net.Socket;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Component
 public class ServerConfig {
 
-    private static final Logger logger = LoggerFactory.getLogger(ServerConfig.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServerConfig.class);
+    private final ExecutorService executorService = Executors.newFixedThreadPool(4);
     private final SSLServerSocket sslServerSocket;
-    private final UserService userService;
-    private final ChatService chatService;
-    private final MessageService messageService;
+    private final OperationHandler operationHandler;
 
     @Autowired
-    public ServerConfig(SSLServerSocket sslServerSocket, UserService userService, ChatService chatService, MessageService messageService) {
+    public ServerConfig(SSLServerSocket sslServerSocket, OperationHandler operationHandler) {
         this.sslServerSocket = sslServerSocket;
-        this.userService = userService;
-        this.chatService = chatService;
-        this.messageService = messageService;
+        this.operationHandler = operationHandler;
     }
 
     @PostConstruct
     public void startServer() {
         try {
+            //noinspection InfiniteLoopStatement
             while (true) {
                 Socket clientSocket = sslServerSocket.accept();
-                logger.info("Connected client: " + clientSocket.getInetAddress());
+                UUID sessionId = UUID.randomUUID();
+                LOGGER.info("Connected client session ID: {}, IP: {}", sessionId, clientSocket.getInetAddress());
 
-                ClientHandler clientHandler = new ClientHandler(clientSocket, userService, chatService, messageService);
-                Thread clientThread = new Thread(clientHandler);
-                clientThread.start();
+                OperationProcessor operationProcessor = new OperationProcessor(clientSocket, operationHandler, sessionId);
+                executorService.submit(operationProcessor);
             }
         } catch (Exception e) {
-            logger.info("Error accepting client connection: " + e.getMessage());
+            LOGGER.error("Error accepting client connection: {}", e.getMessage());
         }
     }
 }

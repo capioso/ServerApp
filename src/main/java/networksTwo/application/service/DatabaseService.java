@@ -1,10 +1,12 @@
-package networksTwo.domain.service;
+package networksTwo.application.service;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class DatabaseService {
@@ -14,14 +16,13 @@ public class DatabaseService {
     @PersistenceContext
     private EntityManager entityManager;
 
-
-    public boolean checkDatabaseConnection() {
+    public Optional<Boolean> checkDatabaseConnection() {
         try {
             entityManager.createNativeQuery("SELECT 1").getSingleResult();
-            return true;
+            return Optional.of(true);
         } catch (Exception e) {
-            logger.error(e.getMessage());
-            return false;
+            logger.error("Database connection error: {}", e.getMessage());
+            return Optional.empty();
         }
     }
 }

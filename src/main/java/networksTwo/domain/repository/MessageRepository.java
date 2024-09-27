@@ -1,4 +1,4 @@
-package networksTwo.adapter.out;
+package networksTwo.domain.repository;
 
 import networksTwo.domain.model.Message;
 import org.springframework.data.jpa.repository.JpaRepository;

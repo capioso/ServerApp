@@ -34,6 +34,7 @@ public class User {
         return chats;
     }
 
+
     public void setUsername(@Pattern(regexp = "^[a-zA-Z]+$", message = "Username must be alpha") String username) {
         this.username = username;
     }
