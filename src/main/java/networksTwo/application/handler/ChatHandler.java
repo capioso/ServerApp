@@ -33,9 +33,7 @@ public class ChatHandler {
     }
 
     public String handleCreateChat(JsonNode node) throws Exception {
-        String token = node.path("token").asText();
-        User owner = getUserFromToken(token, userService)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User owner = getOwner(node);
 
         String username = node.path("username").asText();
         if (username.equals(owner.getUsername())) {
@@ -53,9 +51,29 @@ public class ChatHandler {
                     if (existentChat.getUsers().contains(user)) {
                         throw new IllegalArgumentException("User already in chat.");
                     }
+
+                    String newTitle = node.path("title").asText();
+                    existentChat.setTitle(newTitle);
                     existentChat.getUsers().add(user);
+
                     chatService.updateChat(existentChat)
                             .orElseThrow(() -> new RuntimeException("Chat not updated."));
+
+                    getOutByUserId(user.getId())
+                            .ifPresent(outputStream -> {
+                                        try {
+                                            Response otherClient = new Response(
+                                                    "groupUpdate",
+                                                    new ChatDto(chatId, getTitle(existentChat, user.getUsername()))
+                                            );
+                                            byte[] responseBytes = MessagePackUtils.getInstance().writeValueAsBytes(otherClient);
+                                            outputStream.write(responseBytes);
+                                            outputStream.flush();
+                                        }catch (Exception e) {
+                                            throw new RuntimeException("Failed to send response to user: {}", e.getCause());
+                                        }
+                                    }
+                            );
                 },
                 () -> {
                     Chat chat = new Chat();
@@ -65,34 +83,31 @@ public class ChatHandler {
                     chat.getUsers().add(owner);
                     chatService.createChat(chat)
                             .orElseThrow(() -> new RuntimeException("Chat not created."));
+
+                    getOutByUserId(user.getId())
+                            .ifPresent(outputStream -> {
+                                        try {
+                                            Chat registeredChat = chatService.getById(chatId)
+                                                    .orElseThrow(() -> new RuntimeException("Chat not found."));
+                                            Response otherClient = new Response(
+                                                    "chatUpdate",
+                                                    new ChatDto(chatId, getTitle(registeredChat, user.getUsername()))
+                                            );
+                                            byte[] responseBytes = MessagePackUtils.getInstance().writeValueAsBytes(otherClient);
+                                            outputStream.write(responseBytes);
+                                            outputStream.flush();
+                                        }catch (Exception e) {
+                                            throw new RuntimeException("Failed to send response to user: {}", e.getCause());
+                                        }
+                                    }
+                            );
                 }
         );
-
-        getOutByUserId(user.getId())
-                .ifPresent(outputStream -> {
-                            try {
-                                Chat registeredChat = chatService.getById(chatId)
-                                        .orElseThrow(() -> new RuntimeException("Chat not found."));
-                                Response otherClient = new Response(
-                                        "chatUpdate",
-                                        new ChatDto(chatId, getTitle(registeredChat, user.getUsername()))
-                                );
-                                byte[] responseBytes = MessagePackUtils.getInstance().writeValueAsBytes(otherClient);
-                                outputStream.write(responseBytes);
-                                outputStream.flush();
-                            }catch (Exception e) {
-                                throw new RuntimeException("Failed to send response to user: {}", e.getCause());
-                            }
-                        }
-                );
-
-        return "Chat created successfully";
+        return "Chat saved successfully";
     }
 
     public List<ChatDto> handleGetChats(JsonNode node) throws Exception {
-        String token = node.path("token").asText();
-        User owner = getUserFromToken(token, userService)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User owner = getOwner(node);
 
         return owner.getChats().stream()
                 .map(chat -> {
@@ -103,9 +118,7 @@ public class ChatHandler {
     }
 
     public String handleGetSingleChat(JsonNode node) throws Exception {
-        String token = node.path("token").asText();
-        User owner = getUserFromToken(token, userService)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User owner = getOwner(node);
 
         UUID chatId = UUID.fromString(node.path("chatId").asText());
 
@@ -113,6 +126,12 @@ public class ChatHandler {
                 .orElseThrow(() -> new RuntimeException("Chat not found with id: " + chatId));
 
         return getTitle(chat, owner.getUsername());
+    }
+
+    private User getOwner(JsonNode node) {
+        String token = node.path("token").asText();
+        return getUserFromToken(token, userService)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
     private String getTitle(Chat chat, String ownerUsername){
@@ -123,7 +142,7 @@ public class ChatHandler {
         if (filteredUsers.size() == 1) {
             title = filteredUsers.getFirst();
         } else {
-            title = "Group: " + String.join(", ", filteredUsers);
+            title = chat.getTitle();
         }
 
         return title;

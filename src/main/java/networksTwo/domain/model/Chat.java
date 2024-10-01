@@ -2,6 +2,7 @@ package networksTwo.domain.model;
 
 import jakarta.persistence.*;
 import jakarta.transaction.Transactional;
+import jakarta.validation.constraints.Pattern;
 
 import java.util.*;
 
@@ -10,6 +11,10 @@ public class Chat {
     @Id
     @Column(nullable = false)
     private UUID id;
+
+    @Column(nullable = false)
+    @Pattern(regexp = "^[a-zA-Z0-9 ]+$", message = "Title can only have letter, numbers and spaces")
+    private String title = "default";
 
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Message> messages = new ArrayList<>();
@@ -53,5 +58,11 @@ public class Chat {
 
     public UUID getId() {
         return id;
+    }
+
+    public String getTitle() {return title;}
+
+    public void setTitle(@Pattern(regexp = "^[a-zA-Z0-9 ]+$", message = "Title can only have letter, numbers and spaces") String title) {
+        this.title = title;
     }
 }
