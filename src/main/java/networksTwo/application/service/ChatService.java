@@ -55,6 +55,13 @@ public class ChatService {
     }
 
     @Transactional
+    public Boolean isGroupChat(Chat chat, String ownerUsername) {
+        List<String> filteredUsers = getTitlesByChatWithoutOwner(chat, ownerUsername)
+                .orElseThrow(() -> new RuntimeException("Filtered Users by chat not executed."));
+        return filteredUsers.size() > 1;
+    }
+
+    @Transactional
     public Optional<List<String>> getTitlesByChatWithoutOwner(Chat chat, String ownerUsername) {
         List<String> filteredUsers = chat.getUsers().stream()
                 .map(User::getUsername)

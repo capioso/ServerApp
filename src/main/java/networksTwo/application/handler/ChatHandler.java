@@ -69,12 +69,12 @@ public class ChatHandler {
                                         try {
                                             Response otherClient = new Response(
                                                     "groupUpdate",
-                                                    new ChatDto(chatId, getTitleFiltered(existentChat, user.getUsername()))
+                                                    new ChatDto(chatId, getTitleFiltered(existentChat, user.getUsername()), true)
                                             );
                                             byte[] responseBytes = MessagePackUtils.getInstance().writeValueAsBytes(otherClient);
                                             outputStream.write(responseBytes);
                                             outputStream.flush();
-                                        }catch (Exception e) {
+                                        } catch (Exception e) {
                                             throw new RuntimeException("Failed to send response to user: {}", e.getCause());
                                         }
                                     }
@@ -98,12 +98,12 @@ public class ChatHandler {
                                                     .orElseThrow(() -> new RuntimeException("Chat not found."));
                                             Response otherClient = new Response(
                                                     "chatUpdate",
-                                                    new ChatDto(chatId, getTitleFiltered(registeredChat, user.getUsername()))
+                                                    new ChatDto(chatId, getTitleFiltered(registeredChat, user.getUsername()), false)
                                             );
                                             byte[] responseBytes = MessagePackUtils.getInstance().writeValueAsBytes(otherClient);
                                             outputStream.write(responseBytes);
                                             outputStream.flush();
-                                        }catch (Exception e) {
+                                        } catch (Exception e) {
                                             throw new RuntimeException("Failed to send response to user: {}", e.getCause());
                                         }
                                     }
@@ -120,7 +120,7 @@ public class ChatHandler {
         return owner.getChats().stream()
                 .map(chat -> {
                     String title = getTitleFiltered(chat, owner.getUsername());
-                    return new ChatDto(chat.getId(), title);
+                    return new ChatDto(chat.getId(), title, chatService.isGroupChat(chat, owner.getUsername()));
                 })
                 .collect(Collectors.toList());
     }
@@ -142,7 +142,7 @@ public class ChatHandler {
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
-    private String getTitleFiltered(Chat chat, String ownerUsername){
+    private String getTitleFiltered(Chat chat, String ownerUsername) {
         List<String> filteredUsers = chatService.getTitlesByChatWithoutOwner(chat, ownerUsername)
                 .orElseThrow(() -> new RuntimeException("Filtered Users by chat not executed."));
 
@@ -156,7 +156,7 @@ public class ChatHandler {
         return title;
     }
 
-    private String getTitle(Chat chat){
+    private String getTitle(Chat chat) {
         List<String> filteredUsers = chatService.getTitlesByChat(chat)
                 .orElseThrow(() -> new RuntimeException("Get Users by chat not executed."));
 
