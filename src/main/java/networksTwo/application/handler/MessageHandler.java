@@ -1,7 +1,6 @@
 package networksTwo.application.handler;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import networksTwo.domain.dto.MessageDto;
 import networksTwo.domain.dto.MessageToSendDto;
 import networksTwo.domain.model.Chat;
@@ -14,7 +13,6 @@ import networksTwo.utils.MessagePackUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -46,7 +44,7 @@ public class MessageHandler {
         );
 
         String content = node.path("content").asText();
-
+        String stringDate = node.path("timestamp").asText();
 
         UUID messageId = UUID.randomUUID();
         Message message = new Message();
@@ -54,7 +52,7 @@ public class MessageHandler {
         message.setSender(owner.getId());
         message.setContent(content);
         message.setChat(chat);
-        message.setCreatedAt(Instant.now());
+        message.setCreatedAt(stringDate);
 
         chat.getMessages().add(message);
         chatService.updateChat(chat)
@@ -65,20 +63,14 @@ public class MessageHandler {
 
         users.forEach(uuid -> getOutByUserId(uuid).ifPresent(
                 out -> {
-                    ObjectNode updateNode = MessagePackUtils.getInstance().createObjectNode();
-
-                    updateNode.put("chatId", chat.getId().toString());
-                    updateNode.put("messageId", messageId.toString());
-                    updateNode.put("username", owner.getUsername());
-                    updateNode.put("content", content);
-
                     try {
                         Response messageToSend = new Response(
                                 "messageUpdate", new MessageToSendDto(
                                         chat.getId(),
                                         messageId,
                                         owner.getUsername(),
-                                        content
+                                        content,
+                                        stringDate
                                 ));
                         byte[] responseBytes = MessagePackUtils.getInstance().writeValueAsBytes(messageToSend);
                         out.write(responseBytes);
@@ -116,7 +108,8 @@ public class MessageHandler {
             return new MessageDto(
                     message.getId(),
                     user.getUsername(),
-                    message.getContent()
+                    message.getContent(),
+                    message.getCreatedAt()
             );
         } catch (Exception e) {
             throw new RuntimeException("Error processing message with id " + message.getId() + ": " + e.getMessage(), e);

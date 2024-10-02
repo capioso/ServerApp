@@ -6,6 +6,7 @@ public record MessageToSendDto(
         UUID chatId,
         UUID messageId,
         String usernameSender,
-        String content
+        String content,
+        String timestamp
 ) {
 }

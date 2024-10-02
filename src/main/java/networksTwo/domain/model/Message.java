@@ -3,6 +3,7 @@ package networksTwo.domain.model;
 import jakarta.persistence.*;
 
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @Entity
@@ -18,7 +19,7 @@ public class Message {
     private String content;
 
     @Column(nullable = false, updatable = false)
-    private Instant createdAt;
+    private String createdAt;
 
     @ManyToOne
     @JoinColumn(name = "chatId", nullable = false)
@@ -55,11 +56,11 @@ public class Message {
         return sender;
     }
 
-    public void setCreatedAt(Instant createdAt) {
+    public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
     }
 
-    public Instant getCreatedAt() {
+    public String getCreatedAt() {
         return createdAt;
     }
 }
