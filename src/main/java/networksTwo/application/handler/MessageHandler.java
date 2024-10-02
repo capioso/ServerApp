@@ -60,7 +60,7 @@ public class MessageHandler {
         chatService.updateChat(chat)
                 .orElseThrow(() -> new RuntimeException("Chat not updated"));
 
-        List<UUID> users = chatService.getReceptorsByChat(chat, owner.getId())
+        List<UUID> users = chatService.getReceptorsByChatWithoutSender(chat, owner.getId())
                 .orElseThrow(() -> new RuntimeException("No receivers found for the chat."));
 
         users.forEach(uuid -> getOutByUserId(uuid).ifPresent(

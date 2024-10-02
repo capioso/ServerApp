@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static networksTwo.application.service.SessionService.getOutByUserId;
@@ -45,6 +46,7 @@ public class ChatHandler {
         UUID chatId = UUID.fromString(node.path("chatId").asText());
 
         Optional<Chat> existentChatOptional = chatService.getById(chatId);
+        AtomicReference<String> messageResponse = new AtomicReference<>("");
 
         existentChatOptional.ifPresentOrElse(
                 existentChat -> {
@@ -59,12 +61,15 @@ public class ChatHandler {
                     chatService.updateChat(existentChat)
                             .orElseThrow(() -> new RuntimeException("Chat not updated."));
 
-                    getOutByUserId(user.getId())
+                    List<UUID> users = chatService.getReceptorsByChatWithSender(existentChat)
+                            .orElseThrow(() -> new RuntimeException("Users not found"));
+
+                    users.forEach(userInChat -> getOutByUserId(userInChat)
                             .ifPresent(outputStream -> {
                                         try {
                                             Response otherClient = new Response(
                                                     "groupUpdate",
-                                                    new ChatDto(chatId, getTitle(existentChat, user.getUsername()))
+                                                    new ChatDto(chatId, getTitleFiltered(existentChat, user.getUsername()))
                                             );
                                             byte[] responseBytes = MessagePackUtils.getInstance().writeValueAsBytes(otherClient);
                                             outputStream.write(responseBytes);
@@ -73,7 +78,9 @@ public class ChatHandler {
                                             throw new RuntimeException("Failed to send response to user: {}", e.getCause());
                                         }
                                     }
-                            );
+                            ));
+
+                    messageResponse.set("Chat updated successfully");
                 },
                 () -> {
                     Chat chat = new Chat();
@@ -91,7 +98,7 @@ public class ChatHandler {
                                                     .orElseThrow(() -> new RuntimeException("Chat not found."));
                                             Response otherClient = new Response(
                                                     "chatUpdate",
-                                                    new ChatDto(chatId, getTitle(registeredChat, user.getUsername()))
+                                                    new ChatDto(chatId, getTitleFiltered(registeredChat, user.getUsername()))
                                             );
                                             byte[] responseBytes = MessagePackUtils.getInstance().writeValueAsBytes(otherClient);
                                             outputStream.write(responseBytes);
@@ -101,9 +108,10 @@ public class ChatHandler {
                                         }
                                     }
                             );
+                    messageResponse.set("Chat created successfully");
                 }
         );
-        return "Chat saved successfully";
+        return messageResponse.get();
     }
 
     public List<ChatDto> handleGetChats(JsonNode node) throws Exception {
@@ -111,7 +119,7 @@ public class ChatHandler {
 
         return owner.getChats().stream()
                 .map(chat -> {
-                    String title = getTitle(chat, owner.getUsername());
+                    String title = getTitleFiltered(chat, owner.getUsername());
                     return new ChatDto(chat.getId(), title);
                 })
                 .collect(Collectors.toList());
@@ -125,7 +133,7 @@ public class ChatHandler {
         Chat chat = chatService.getById(chatId)
                 .orElseThrow(() -> new RuntimeException("Chat not found with id: " + chatId));
 
-        return getTitle(chat, owner.getUsername());
+        return getTitleFiltered(chat, owner.getUsername());
     }
 
     private User getOwner(JsonNode node) {
@@ -134,9 +142,23 @@ public class ChatHandler {
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
-    private String getTitle(Chat chat, String ownerUsername){
+    private String getTitleFiltered(Chat chat, String ownerUsername){
         List<String> filteredUsers = chatService.getTitlesByChatWithoutOwner(chat, ownerUsername)
                 .orElseThrow(() -> new RuntimeException("Filtered Users by chat not executed."));
+
+        String title;
+        if (filteredUsers.size() == 1) {
+            title = filteredUsers.getFirst();
+        } else {
+            title = chat.getTitle();
+        }
+
+        return title;
+    }
+
+    private String getTitle(Chat chat){
+        List<String> filteredUsers = chatService.getTitlesByChat(chat)
+                .orElseThrow(() -> new RuntimeException("Get Users by chat not executed."));
 
         String title;
         if (filteredUsers.size() == 1) {
