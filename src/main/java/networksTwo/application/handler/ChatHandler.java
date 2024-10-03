@@ -13,9 +13,7 @@ import org.springframework.expression.ExpressionException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static networksTwo.application.service.SessionService.getOutByUserId;
@@ -41,77 +39,36 @@ public class ChatHandler {
             throw new ExpressionException("You can not create a chat with yourself.");
         }
 
-        User user = userService.getByUsername(username).orElseThrow(() -> new ExpressionException("User not found."));
+        User user = userService.getByUsername(username)
+                .orElseThrow(() -> new ExpressionException("User not found."));
 
         UUID chatId = UUID.fromString(node.path("chatId").asText());
 
-        Optional<Chat> existentChatOptional = chatService.getById(chatId);
-        AtomicReference<String> messageResponse = new AtomicReference<>("");
+        Chat chat = new Chat();
+        chat.setId(chatId);
+        chat.setOwner(owner);
+        chat.getUsers().add(user);
+        chat.getUsers().add(owner);
+        chatService.createChat(chat)
+                .orElseThrow(() -> new RuntimeException("Chat not created."));
 
-        existentChatOptional.ifPresentOrElse(
-                existentChat -> {
-                    if (existentChat.getUsers().contains(user)) {
-                        throw new IllegalArgumentException("User already in chat.");
-                    }
+        getOutByUserId(user.getId())
+                .ifPresent(outputStream -> {
+                            try {
+                                Response otherClient = new Response(
+                                        "chatUpdate",
+                                        new ChatDto(chatId, owner.getUsername(), false)
+                                );
+                                byte[] responseBytes = MessagePackUtils.getInstance().writeValueAsBytes(otherClient);
+                                outputStream.write(responseBytes);
+                                outputStream.flush();
+                            } catch (Exception e) {
+                                throw new RuntimeException("Failed to send response to user: {}", e.getCause());
+                            }
+                        }
+                );
 
-                    String newTitle = node.path("title").asText();
-                    existentChat.setTitle(newTitle);
-                    existentChat.getUsers().add(user);
-
-                    chatService.updateChat(existentChat)
-                            .orElseThrow(() -> new RuntimeException("Chat not updated."));
-
-                    List<UUID> users = chatService.getReceptorsByChatWithSender(existentChat)
-                            .orElseThrow(() -> new RuntimeException("Users not found"));
-
-                    users.forEach(userInChat -> getOutByUserId(userInChat)
-                            .ifPresent(outputStream -> {
-                                        try {
-                                            Response otherClient = new Response(
-                                                    "groupUpdate",
-                                                    new ChatDto(chatId, getTitleFiltered(existentChat, user.getUsername()), true)
-                                            );
-                                            byte[] responseBytes = MessagePackUtils.getInstance().writeValueAsBytes(otherClient);
-                                            outputStream.write(responseBytes);
-                                            outputStream.flush();
-                                        } catch (Exception e) {
-                                            throw new RuntimeException("Failed to send response to user: {}", e.getCause());
-                                        }
-                                    }
-                            ));
-
-                    messageResponse.set("Chat updated successfully");
-                },
-                () -> {
-                    Chat chat = new Chat();
-                    chat.setId(chatId);
-                    chat.setOwner(owner);
-                    chat.getUsers().add(user);
-                    chat.getUsers().add(owner);
-                    chatService.createChat(chat)
-                            .orElseThrow(() -> new RuntimeException("Chat not created."));
-
-                    getOutByUserId(user.getId())
-                            .ifPresent(outputStream -> {
-                                        try {
-                                            Chat registeredChat = chatService.getById(chatId)
-                                                    .orElseThrow(() -> new RuntimeException("Chat not found."));
-                                            Response otherClient = new Response(
-                                                    "chatUpdate",
-                                                    new ChatDto(chatId, getTitleFiltered(registeredChat, user.getUsername()), false)
-                                            );
-                                            byte[] responseBytes = MessagePackUtils.getInstance().writeValueAsBytes(otherClient);
-                                            outputStream.write(responseBytes);
-                                            outputStream.flush();
-                                        } catch (Exception e) {
-                                            throw new RuntimeException("Failed to send response to user: {}", e.getCause());
-                                        }
-                                    }
-                            );
-                    messageResponse.set("Chat created successfully");
-                }
-        );
-        return messageResponse.get();
+        return "Chat created successfully";
     }
 
     public List<ChatDto> handleGetChats(JsonNode node) throws Exception {
@@ -136,6 +93,95 @@ public class ChatHandler {
         return getTitleFiltered(chat, owner.getUsername());
     }
 
+    public String handleAddUserToChat(JsonNode node) {
+        User owner = getOwner(node);
+
+        String username = node.path("username").asText();
+        if (username.equals(owner.getUsername())) {
+            throw new ExpressionException("You can not create a chat with yourself.");
+        }
+
+        User user = userService.getByUsername(username)
+                .orElseThrow(() -> new ExpressionException("User not found."));
+
+        UUID chatId = UUID.fromString(node.path("chatId").asText());
+
+        Chat existentChat = chatService.getById(chatId)
+                .orElseThrow(() -> new RuntimeException("Chat not found."));
+
+        if (existentChat.getUsers().contains(user)) {
+            throw new IllegalArgumentException("User already in chat.");
+        }
+
+        existentChat.getUsers().add(user);
+        chatService.updateChat(existentChat)
+                .orElseThrow(() -> new RuntimeException("Chat not updated."));
+
+        getOutByUserId(user.getId())
+                .ifPresent(outputStream -> {
+                            try {
+                                Response otherClient = new Response(
+                                        "chatUpdate",
+                                        new ChatDto(chatId, existentChat.getTitle(), true)
+                                );
+                                byte[] responseBytes = MessagePackUtils.getInstance().writeValueAsBytes(otherClient);
+                                outputStream.write(responseBytes);
+                                outputStream.flush();
+                            } catch (Exception e) {
+                                throw new RuntimeException("Failed to send response to user: {}", e.getCause());
+                            }
+                        }
+                );
+        return "User added successfully";
+    }
+
+    public String handlePromoteToGroup(JsonNode node) {
+        User owner = getOwner(node);
+
+        String username = node.path("username").asText();
+        if (username.equals(owner.getUsername())) {
+            throw new ExpressionException("You can not create a chat with yourself.");
+        }
+
+        User user = userService.getByUsername(username)
+                .orElseThrow(() -> new ExpressionException("User not found."));
+
+        UUID chatId = UUID.fromString(node.path("chatId").asText());
+        Chat existentChat = chatService.getById(chatId)
+                .orElseThrow(() -> new RuntimeException("Chat not found."));
+
+        if (existentChat.getUsers().contains(user)) {
+            throw new IllegalArgumentException("User already in chat.");
+        }
+
+        String newTitle = node.path("title").asText();
+        existentChat.setTitle(newTitle);
+        existentChat.getUsers().add(user);
+        chatService.updateChat(existentChat)
+                .orElseThrow(() -> new RuntimeException("Chat not updated."));
+
+        List<UUID> users = chatService.getReceptorsByChatWithSender(existentChat)
+                .orElseThrow(() -> new RuntimeException("Users not found"));
+
+        users.forEach(userInChat -> getOutByUserId(userInChat)
+                .ifPresent(outputStream -> {
+                            try {
+                                Response otherClient = new Response(
+                                        "groupUpdate",
+                                        new ChatDto(chatId, existentChat.getTitle(), true)
+                                );
+                                byte[] responseBytes = MessagePackUtils.getInstance().writeValueAsBytes(otherClient);
+                                outputStream.write(responseBytes);
+                                outputStream.flush();
+                            } catch (Exception e) {
+                                throw new RuntimeException("Failed to send response to user: {}", e.getCause());
+                            }
+                        }
+                ));
+
+        return "Chat upgraded successfully";
+    }
+
     private User getOwner(JsonNode node) {
         String token = node.path("token").asText();
         return getUserFromToken(token, userService)
@@ -145,20 +191,6 @@ public class ChatHandler {
     private String getTitleFiltered(Chat chat, String ownerUsername) {
         List<String> filteredUsers = chatService.getTitlesByChatWithoutOwner(chat, ownerUsername)
                 .orElseThrow(() -> new RuntimeException("Filtered Users by chat not executed."));
-
-        String title;
-        if (filteredUsers.size() == 1) {
-            title = filteredUsers.getFirst();
-        } else {
-            title = chat.getTitle();
-        }
-
-        return title;
-    }
-
-    private String getTitle(Chat chat) {
-        List<String> filteredUsers = chatService.getTitlesByChat(chat)
-                .orElseThrow(() -> new RuntimeException("Get Users by chat not executed."));
 
         String title;
         if (filteredUsers.size() == 1) {

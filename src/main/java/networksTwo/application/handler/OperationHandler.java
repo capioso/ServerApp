@@ -59,6 +59,8 @@ public class OperationHandler {
                 case Operation.CREATE_CHAT -> chatHandler.handleCreateChat(rootNode);
                 case Operation.GET_CHATS -> chatHandler.handleGetChats(rootNode);
                 case Operation.GET_SINGLE_CHAT -> chatHandler.handleGetSingleChat(rootNode);
+                case Operation.ADD_USER_TO_CHAT -> chatHandler.handleAddUserToChat(rootNode);
+                case Operation.PROMOTE_TO_GROUP -> chatHandler.handlePromoteToGroup(rootNode);
                 case Operation.SEND_MESSAGE -> messageHandler.handleSendMessage(rootNode);
                 case Operation.GET_MESSAGES_BY_CHAT -> messageHandler.handleGetMessagesByChat(rootNode);
                 default -> throw new IllegalStateException("Unexpected value: " + operation.name());

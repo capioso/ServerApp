@@ -9,7 +9,7 @@ import java.util.*;
 @Entity
 public class Chat {
     @Id
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private UUID id;
 
     @Column(nullable = false)

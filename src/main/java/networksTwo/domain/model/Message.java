@@ -9,7 +9,7 @@ import java.util.UUID;
 @Entity
 public class Message {
     @Id
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private UUID id;
 
     @Column(nullable = false)

@@ -13,6 +13,9 @@ import networksTwo.utils.MessagePackUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -96,6 +99,14 @@ public class MessageHandler {
         );
 
         return chat.getMessages().stream()
+                .sorted(Comparator.comparing(message -> {
+                    String createdAtString = message.getCreatedAt();
+                    try {
+                        return ZonedDateTime.parse(createdAtString);
+                    } catch (DateTimeParseException e) {
+                        throw new RuntimeException("Could not parse zonedDateTime: " + e.getMessage());
+                    }
+                }))
                 .map(this::convertToMessageDto)
                 .collect(Collectors.toList());
     }
