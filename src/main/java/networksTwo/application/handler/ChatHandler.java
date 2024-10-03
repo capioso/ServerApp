@@ -136,27 +136,14 @@ public class ChatHandler {
     }
 
     public String handlePromoteToGroup(JsonNode node) {
-        User owner = getOwner(node);
-
-        String username = node.path("username").asText();
-        if (username.equals(owner.getUsername())) {
-            throw new ExpressionException("You can not create a chat with yourself.");
-        }
-
-        User user = userService.getByUsername(username)
-                .orElseThrow(() -> new ExpressionException("User not found."));
+        getOwner(node);
 
         UUID chatId = UUID.fromString(node.path("chatId").asText());
         Chat existentChat = chatService.getById(chatId)
                 .orElseThrow(() -> new RuntimeException("Chat not found."));
 
-        if (existentChat.getUsers().contains(user)) {
-            throw new IllegalArgumentException("User already in chat.");
-        }
-
         String newTitle = node.path("title").asText();
         existentChat.setTitle(newTitle);
-        existentChat.getUsers().add(user);
         chatService.updateChat(existentChat)
                 .orElseThrow(() -> new RuntimeException("Chat not updated."));
 
