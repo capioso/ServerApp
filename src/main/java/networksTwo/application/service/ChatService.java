@@ -38,7 +38,7 @@ public class ChatService {
     }
 
     @Transactional
-    public Optional<List<UUID>> getReceptorsByChat(Chat chat, UUID sender) {
+    public Optional<List<UUID>> getReceptorsByChatWithoutSender(Chat chat, UUID sender) {
         List<UUID> receivers = chat.getUsers().stream()
                 .map(User::getId)
                 .filter(id -> !id.equals(sender))
@@ -47,10 +47,33 @@ public class ChatService {
     }
 
     @Transactional
+    public Optional<List<UUID>> getReceptorsByChatWithSender(Chat chat) {
+        List<UUID> receivers = chat.getUsers().stream()
+                .map(User::getId)
+                .collect(Collectors.toList());
+        return receivers.isEmpty() ? Optional.empty() : Optional.of(receivers);
+    }
+
+    @Transactional
+    public Boolean isGroupChat(Chat chat, String ownerUsername) {
+        List<String> filteredUsers = getTitlesByChatWithoutOwner(chat, ownerUsername)
+                .orElseThrow(() -> new RuntimeException("Filtered Users by chat not executed."));
+        return filteredUsers.size() > 1;
+    }
+
+    @Transactional
     public Optional<List<String>> getTitlesByChatWithoutOwner(Chat chat, String ownerUsername) {
         List<String> filteredUsers = chat.getUsers().stream()
                 .map(User::getUsername)
                 .filter(username -> !username.equals(ownerUsername))
+                .toList();
+        return filteredUsers.isEmpty() ? Optional.empty() : Optional.of(filteredUsers);
+    }
+
+    @Transactional
+    public Optional<List<String>> getTitlesByChat(Chat chat) {
+        List<String> filteredUsers = chat.getUsers().stream()
+                .map(User::getUsername)
                 .toList();
         return filteredUsers.isEmpty() ? Optional.empty() : Optional.of(filteredUsers);
     }
