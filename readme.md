@@ -102,6 +102,7 @@ For this Capstone,  the expected architecture to develop was the Hexagonal Archi
 > * As I set up SSH, I could control the server directly from my phone.
 > * As the project requires of the JAR file then it must pass through the compilation process which result is `Build Success`
 > * Check the code compressed in the following file: [ServerApp.zip](documentation/ServerApp.zip)
+> * Link to Github repository: [@capioso/ServerApp](https://github.com/capioso/ServerApp)
 
 ![](documentation/serverRunning.png)
 
